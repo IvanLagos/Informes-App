@@ -580,3 +580,35 @@ select:focus {
 .formatos-opciones .tipo-opcion input {
   margin-top: 0;
 }
+
+/* ---------- Vista previa ---------- */
+.vista-previa {
+  display: block;
+  width: 100%;
+  height: 78vh;
+  min-height: 480px;
+  border: 1.5px solid var(--color-borde);
+  border-radius: 10px;
+  background: #f1f4f8;
+}
+
+.vista-previa--estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: 160px;
+  padding: 24px;
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.vista-previa-ayuda {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.vista-previa-ayuda a {
+  color: var(--color-acento);
+}

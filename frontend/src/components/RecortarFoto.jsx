@@ -113,6 +113,8 @@ export default function RecortarFoto({ label, aspecto, onListo, inicialListo = f
   async function confirmarRecorte() {
     if (!pixelCropRef.current) return;
     const blob = await recortarComoBlob(urlParaRecortar, pixelCropRef.current);
+    // Si la imagen aún no terminaba de cargar, el recorte sale vacío: no avanzar.
+    if (!blob) return;
     onListo(blob);
     setEtapa(ETAPAS.LISTO);
   }

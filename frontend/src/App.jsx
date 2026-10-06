@@ -20,6 +20,8 @@ export default function App() {
   const [error, setError] = useState("");
   const [nombreArchivo, setNombreArchivo] = useState("");
   const [formatoDescarga, setFormatoDescarga] = useState("docx");
+  // { cargando } | { blob, nombre, url } | { error }
+  const [vistaPrevia, setVistaPrevia] = useState({});
 
   const tipo = tipos.find((t) => t.id === tipoId);
 
@@ -93,21 +95,57 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
+  function pedirInforme(formato) {
+    const camposTitulos = Object.fromEntries(
+      Object.entries(titulos).map(([clave, titulo]) => [`titulo_${clave}`, tituloFinal(titulo)])
+    );
+    return generarInforme(tipo.id, {
+      datos: { ...datos, ...camposTitulos },
+      fotos,
+      nombreArchivo: nombreArchivo.trim(),
+      formato,
+    });
+  }
+
+  // Al entrar al paso 5 se genera el PDF para la vista previa. En ese paso
+  // los datos y las fotos ya no cambian, así que el mismo PDF sirve para la
+  // descarga. Al salir del paso se descarta.
+  useEffect(() => {
+    if (paso !== 5) return;
+    let cancelado = false;
+    let url = null;
+    setVistaPrevia({ cargando: true });
+    pedirInforme("pdf")
+      .then(({ blob, nombre }) => {
+        if (cancelado) return;
+        url = URL.createObjectURL(blob);
+        setVistaPrevia({ blob, nombre, url });
+      })
+      .catch((e) => !cancelado && setVistaPrevia({ error: e.message }));
+    return () => {
+      cancelado = true;
+      if (url) URL.revokeObjectURL(url);
+      setVistaPrevia({});
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paso]);
+
+  function nombrePdf() {
+    const propio = nombreArchivo.trim().replace(/\.docx$|\.pdf$/i, "").replace(/[\\/:*?"<>|]/g, "").trim();
+    return propio ? `${propio}.pdf` : vistaPrevia.nombre;
+  }
+
   async function manejarGenerar() {
     setError("");
     setCargando(true);
     try {
-      const camposTitulos = Object.fromEntries(
-        Object.entries(titulos).map(([clave, titulo]) => [`titulo_${clave}`, tituloFinal(titulo)])
-      );
       const formatos = formatoDescarga === "ambos" ? ["docx", "pdf"] : [formatoDescarga];
       for (const formato of formatos) {
-        const { blob, nombre } = await generarInforme(tipo.id, {
-          datos: { ...datos, ...camposTitulos },
-          fotos,
-          nombreArchivo: nombreArchivo.trim(),
-          formato,
-        });
+        if (formato === "pdf" && vistaPrevia.blob) {
+          descargar(vistaPrevia.blob, nombrePdf());
+          continue;
+        }
+        const { blob, nombre } = await pedirInforme(formato);
         descargar(blob, nombre);
       }
     } catch (e) {
@@ -187,11 +225,10 @@ export default function App() {
 
       {paso === 5 && tipo && (
         <PasoGenerar
-          tipo={tipo}
-          datos={datos}
           cargando={cargando}
           nombreArchivo={nombreArchivo}
           onCambiarNombre={setNombreArchivo}
+          vistaPrevia={vistaPrevia}
           formato={formatoDescarga}
           onCambiarFormato={setFormatoDescarga}
           onGenerar={manejarGenerar}

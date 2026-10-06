@@ -4,10 +4,36 @@ const FORMATOS = [
   { valor: "ambos", etiqueta: "Ambos (Word y PDF)" },
 ];
 
+function VistaPrevia({ vistaPrevia }) {
+  if (vistaPrevia.cargando) {
+    return <div className="vista-previa vista-previa--estado">Generando la vista previa del informe… puede tardar unos segundos.</div>;
+  }
+  if (vistaPrevia.error) {
+    return (
+      <div className="vista-previa vista-previa--estado">
+        No se pudo generar la vista previa: {vistaPrevia.error}. Igual puedes descargar el informe.
+      </div>
+    );
+  }
+  if (!vistaPrevia.url) return null;
+  return (
+    <>
+      {/* #view=FitH: ajusta la página al ancho; navpanes=0: sin panel de miniaturas. */}
+      <iframe className="vista-previa" src={`${vistaPrevia.url}#view=FitH&navpanes=0`} title="Vista previa del informe" />
+      <p className="vista-previa-ayuda">
+        ¿No se ve bien?{" "}
+        <a href={vistaPrevia.url} target="_blank" rel="noreferrer">
+          Abrir la vista previa en otra pestaña
+        </a>
+        . Si algo está mal, usa «Volver» para corregirlo.
+      </p>
+    </>
+  );
+}
+
 export default function PasoGenerar({
-  tipo,
-  datos,
   cargando,
+  vistaPrevia,
   nombreArchivo,
   onCambiarNombre,
   formato,
@@ -17,24 +43,8 @@ export default function PasoGenerar({
 }) {
   return (
     <section className="paso">
-      <h2>Paso 5: Generar informe</h2>
-      <div className="resumen">
-        <p>
-          <strong>Tipo:</strong> {tipo.nombre}
-        </p>
-        <p>
-          <strong>Empresa:</strong> {datos.EMPRESA}
-        </p>
-        <p>
-          <strong>Ubicación:</strong> {datos.UBICACION}
-        </p>
-        <p>
-          <strong>Modelo UPS:</strong> {datos.MODELO_UPS} · {datos.POTENCIA}
-        </p>
-        <p>
-          <strong>Fecha del servicio:</strong> {datos.FECHA_ASUNTO}
-        </p>
-      </div>
+      <h2>Paso 5: Revisa y descarga el informe</h2>
+      <VistaPrevia vistaPrevia={vistaPrevia} />
 
       <label className="campo ancho nombre-archivo">
         <span>Nombre del archivo (opcional)</span>
@@ -68,16 +78,12 @@ export default function PasoGenerar({
         </div>
       </div>
 
-      <p>
-        Se generará el informe con los datos y las fotos cargadas.
-        {formato !== "docx" && " El PDF puede tardar unos segundos más."}
-      </p>
       <div className="acciones">
         <button type="button" onClick={onVolver} disabled={cargando}>
           Volver
         </button>
         <button type="button" className="principal" onClick={onGenerar} disabled={cargando}>
-          {cargando ? "Generando…" : "Generar y descargar informe"}
+          {cargando ? "Descargando…" : "Descargar informe"}
         </button>
       </div>
     </section>
