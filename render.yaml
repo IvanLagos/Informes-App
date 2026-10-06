@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: informes-app
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: APP_USUARIO
+        value: ffica

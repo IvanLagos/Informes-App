@@ -38,13 +38,29 @@ Pasos del asistente:
 
 ## Configuración inicial (una sola vez)
 
-1. `backend/.env` debe tener la clave de la API de Anthropic
-   (`ANTHROPIC_API_KEY=...`) y `PORT=8001`.
+1. Copiar `backend/.env.example` como `backend/.env` y poner la clave de la
+   API de Anthropic (`ANTHROPIC_API_KEY=...`) y `PORT=8001`.
 2. Instalar dependencias:
    ```bash
    cd backend && npm install
    cd ../frontend && npm install
    ```
+
+## Publicar en Render
+
+El archivo `render.yaml` ya trae la configuración (un solo servicio: el
+backend entrega también la página).
+
+1. En render.com: **New → Blueprint** y elegir este repositorio.
+2. Completar las variables que pide:
+   - `ANTHROPIC_API_KEY`: la clave de la API de Anthropic.
+   - `APP_PASSWORD`: la contraseña para entrar a la página.
+3. Al abrir la dirección que entrega Render, el navegador pide usuario
+   (`ffica`) y contraseña (`APP_PASSWORD`).
+
+Cada vez que se sube un cambio a `main`, Render vuelve a publicar la app.
+En el plan gratuito el servicio se duerme sin uso y la primera visita
+tarda ~1 minuto en cargar.
 
 ## Estructura
 

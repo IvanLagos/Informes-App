@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+// Misma dirección que la página: en local Vite redirige /api al backend
+// (ver vite.config.js) y en Render el backend entrega la página y la API.
+const API_URL = "";
 
 async function leerError(res, porDefecto) {
   const data = await res.json().catch(() => ({}));
