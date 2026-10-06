@@ -54,20 +54,21 @@ const SECCIONES = [
   },
 ];
 
-// Años de uso con los que cada modelo de batería queda degradado. Al
-// cumplirlos se agrega la recomendación de cambio (en el navegador, para que
-// se vea y se pueda editar en el formulario).
+// Años de uso con los que se recomienda cambiar cada modelo de batería: un
+// año menos que los años en que queda degradada. Al cumplirlos se agrega la
+// recomendación de cambio (en el navegador, para que se vea y se pueda
+// editar en el formulario).
 const VIDA_UTIL_BATERIAS = {
-  HRL1234: 7,
-  "12V 9Ah": 7,
-  GP1272: 4,
-  "HR12,27W": 4,
-  HRL12110: 9,
-  HRL12120: 9,
-  HRL12150: 9,
-  HRL12200: 9,
-  HRL12280: 9,
-  SWL1100: 9,
+  HRL1234: 6,
+  "12V 9Ah": 6,
+  GP1272: 3,
+  "HR12,27W": 3,
+  HRL12110: 8,
+  HRL12120: 8,
+  HRL12150: 8,
+  HRL12200: 8,
+  HRL12280: 8,
+  SWL1100: 8,
 };
 const TEXTO_CAMBIO_BATERIAS = "Se recomienda el cambio de baterías por cumplimiento de vida útil.";
 
