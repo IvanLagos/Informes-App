@@ -19,6 +19,7 @@ export default function App() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [nombreArchivo, setNombreArchivo] = useState("");
+  const [formatoDescarga, setFormatoDescarga] = useState("docx");
 
   const tipo = tipos.find((t) => t.id === tipoId);
 
@@ -81,6 +82,17 @@ export default function App() {
     setFotos((prev) => ({ ...prev, [clave]: blob }));
   }
 
+  function descargar(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   async function manejarGenerar() {
     setError("");
     setCargando(true);
@@ -88,19 +100,16 @@ export default function App() {
       const camposTitulos = Object.fromEntries(
         Object.entries(titulos).map(([clave, titulo]) => [`titulo_${clave}`, tituloFinal(titulo)])
       );
-      const { blob, nombre } = await generarInforme(tipo.id, {
-        datos: { ...datos, ...camposTitulos },
-        fotos,
-        nombreArchivo: nombreArchivo.trim(),
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = nombre;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const formatos = formatoDescarga === "ambos" ? ["docx", "pdf"] : [formatoDescarga];
+      for (const formato of formatos) {
+        const { blob, nombre } = await generarInforme(tipo.id, {
+          datos: { ...datos, ...camposTitulos },
+          fotos,
+          nombreArchivo: nombreArchivo.trim(),
+          formato,
+        });
+        descargar(blob, nombre);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -183,6 +192,8 @@ export default function App() {
           cargando={cargando}
           nombreArchivo={nombreArchivo}
           onCambiarNombre={setNombreArchivo}
+          formato={formatoDescarga}
+          onCambiarFormato={setFormatoDescarga}
           onGenerar={manejarGenerar}
           onVolver={() => setPaso(4)}
         />

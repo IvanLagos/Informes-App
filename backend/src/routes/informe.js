@@ -4,6 +4,13 @@ const multer = require("multer");
 const { TIPOS, obtenerTipo, describirTipo } = require("../tipos");
 const { leerHojaTrabajo } = require("../lib/vision");
 const { generarDocx } = require("../lib/docx");
+const { docxAPdf } = require("../lib/pdf");
+
+// "Ambos" lo resuelve el navegador pidiendo los dos formatos por separado.
+const FORMATOS = {
+  docx: { extension: "docx", tipoContenido: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+  pdf: { extension: "pdf", tipoContenido: "application/pdf" },
+};
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -62,9 +69,13 @@ router.post("/tipos/:tipo/generar", upload.any(), async (req, res) => {
     });
 
     const nombre = sanitizarNombreArchivo(req.body.nombre_archivo) || tipo.nombreArchivo(datos);
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-    res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodeURIComponent(nombre)}.docx`);
-    res.send(docx);
+    const formato = FORMATOS[req.body.formato] ? req.body.formato : "docx";
+
+    const archivo = formato === "pdf" ? await docxAPdf(docx) : docx;
+    const { extension, tipoContenido } = FORMATOS[formato];
+    res.setHeader("Content-Type", tipoContenido);
+    res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodeURIComponent(nombre)}.${extension}`);
+    res.send(archivo);
   } catch (e) {
     console.error(e);
     if (!res.headersSent) res.status(500).json({ error: e.message });

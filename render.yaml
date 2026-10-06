@@ -1,10 +1,10 @@
 services:
   - type: web
     name: informes-app
-    runtime: node
+    # Docker para poder instalar LibreOffice (conversión a PDF). Ver Dockerfile.
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     plan: free
-    buildCommand: npm run build
-    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: ANTHROPIC_API_KEY

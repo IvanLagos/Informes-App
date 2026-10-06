@@ -1,7 +1,9 @@
-require("dotenv").config();
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+// backend/.env, sin importar desde qué carpeta se arranque (en Render las
+// variables vienen del panel y este archivo no existe).
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const express = require("express");
 const cors = require("cors");
 const informeRoutes = require("./routes/informe");

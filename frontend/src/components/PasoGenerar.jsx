@@ -1,4 +1,20 @@
-export default function PasoGenerar({ tipo, datos, cargando, nombreArchivo, onCambiarNombre, onGenerar, onVolver }) {
+const FORMATOS = [
+  { valor: "docx", etiqueta: "Word (.docx)" },
+  { valor: "pdf", etiqueta: "PDF (.pdf)" },
+  { valor: "ambos", etiqueta: "Ambos (Word y PDF)" },
+];
+
+export default function PasoGenerar({
+  tipo,
+  datos,
+  cargando,
+  nombreArchivo,
+  onCambiarNombre,
+  formato,
+  onCambiarFormato,
+  onGenerar,
+  onVolver,
+}) {
   return (
     <section className="paso">
       <h2>Paso 5: Generar informe</h2>
@@ -29,11 +45,33 @@ export default function PasoGenerar({ tipo, datos, cargando, nombreArchivo, onCa
             placeholder="Si lo dejas vacío se usa el nombre de siempre"
             onChange={(e) => onCambiarNombre(e.target.value)}
           />
-          <span className="nombre-archivo-ext">.docx</span>
         </div>
       </label>
 
-      <p>Se generará el archivo Word (.docx) con los datos y las fotos cargadas.</p>
+      <div className="formatos">
+        <span className="formatos-titulo">Formato de descarga</span>
+        <div className="formatos-opciones">
+          {FORMATOS.map((f) => (
+            <label key={f.valor} className={`tipo-opcion${formato === f.valor ? " tipo-opcion--activa" : ""}`}>
+              <input
+                type="radio"
+                name="formato"
+                value={f.valor}
+                checked={formato === f.valor}
+                onChange={() => onCambiarFormato(f.valor)}
+              />
+              <span>
+                <strong>{f.etiqueta}</strong>
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <p>
+        Se generará el informe con los datos y las fotos cargadas.
+        {formato !== "docx" && " El PDF puede tardar unos segundos más."}
+      </p>
       <div className="acciones">
         <button type="button" onClick={onVolver} disabled={cargando}>
           Volver
