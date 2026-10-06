@@ -1,4 +1,23 @@
-export default function PasoFormulario({ secciones, datos, onCambiar, onSiguiente, onVolver }) {
+function NotaBaterias({ estado, modelo }) {
+  if (!estado || !modelo || estado.antiguedad === null) return null;
+  if (!estado.vida) {
+    return (
+      <div className="nota-baterias">
+        El modelo de baterías «{modelo}» no está en la tabla de vida útil: no se agrega recomendación de cambio.
+      </div>
+    );
+  }
+  const { vida, antiguedad, degradada } = estado;
+  return (
+    <div className={`nota-baterias ${degradada ? "nota-baterias--activa" : ""}`}>
+      {degradada
+        ? `✓ Baterías ${vida.modelo} con ${antiguedad} años (vida útil ${vida.anios} años): se agregó la recomendación de cambio en Recomendaciones.`
+        : `Baterías ${vida.modelo} con ${antiguedad} años (vida útil ${vida.anios} años): todavía no requieren cambio.`}
+    </div>
+  );
+}
+
+export default function PasoFormulario({ secciones, estadoBaterias, datos, onCambiar, onSiguiente, onVolver }) {
   return (
     <section className="paso">
       <h2>Paso 3: Revisa y corrige los datos</h2>
@@ -32,6 +51,9 @@ export default function PasoFormulario({ secciones, datos, onCambiar, onSiguient
               </label>
             ))}
           </div>
+          {seccion.titulo === "Antecedentes del equipo" && (
+            <NotaBaterias estado={estadoBaterias} modelo={datos.MODELO_BATERIAS} />
+          )}
         </div>
       ))}
 

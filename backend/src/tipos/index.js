@@ -21,6 +21,7 @@ function describirTipo(t) {
     })),
     fotoHoja: t.FOTO_HOJA,
     titulosFoto: t.TITULOS_FOTO || [],
+    reglaBaterias: t.VIDA_UTIL_BATERIAS ? { vidaUtil: t.VIDA_UTIL_BATERIAS, texto: t.TEXTO_CAMBIO_BATERIAS } : null,
     valoresPorDefecto: t.valoresPorDefecto(),
   };
 }

@@ -54,6 +54,23 @@ const SECCIONES = [
   },
 ];
 
+// Años de uso con los que cada modelo de batería queda degradado. Al
+// cumplirlos se agrega la recomendación de cambio (en el navegador, para que
+// se vea y se pueda editar en el formulario).
+const VIDA_UTIL_BATERIAS = {
+  HRL1234: 7,
+  "12V 9Ah": 7,
+  GP1272: 4,
+  "HR12,27W": 4,
+  HRL12110: 9,
+  HRL12120: 9,
+  HRL12150: 9,
+  HRL12200: 9,
+  HRL12280: 9,
+  SWL1100: 9,
+};
+const TEXTO_CAMBIO_BATERIAS = "Se recomienda el cambio de baterías por cumplimiento de vida útil.";
+
 // Títulos que se pueden elegir para las fotos del trabajo (mismo sistema que informes-claude).
 const TITULOS_FOTO = [
   "Placa informativa",
@@ -249,6 +266,8 @@ module.exports = {
   FOTOS,
   FOTO_HOJA,
   TITULOS_FOTO,
+  VIDA_UTIL_BATERIAS,
+  TEXTO_CAMBIO_BATERIAS,
   PROMPT,
   valoresPorDefecto,
   interpretarLectura,

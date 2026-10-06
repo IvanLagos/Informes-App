@@ -4,6 +4,7 @@ import PasoTipo from "./components/PasoTipo";
 import PasoHoja from "./components/PasoHoja";
 import PasoFormulario from "./components/PasoFormulario";
 import PasoFotos, { tituloFinal } from "./components/PasoFotos";
+import { estadoBaterias, sincronizarRecomendacion } from "./baterias";
 import PasoGenerar from "./components/PasoGenerar";
 
 const NOMBRES_PASOS = ["Tipo de informe", "Hoja de trabajo", "Datos", "Fotos", "Generar"];
@@ -58,6 +59,19 @@ export default function App() {
       setCargando(false);
     }
   }
+
+  // Mantiene la recomendación de cambio de baterías al día con el modelo, el
+  // año de las baterías y la fecha del servicio (vengan de la IA o de una
+  // corrección manual en el formulario).
+  useEffect(() => {
+    if (!tipo?.reglaBaterias) return;
+    setDatos((prev) => {
+      if (prev.RECOMENDACIONES === undefined) return prev;
+      const { degradada } = estadoBaterias(prev, tipo.reglaBaterias);
+      const nuevo = sincronizarRecomendacion(prev.RECOMENDACIONES, tipo.reglaBaterias.texto, degradada);
+      return nuevo === prev.RECOMENDACIONES ? prev : { ...prev, RECOMENDACIONES: nuevo };
+    });
+  }, [tipo, datos.MODELO_BATERIAS, datos.ANIO_BATERIAS, datos.FECHA_ASUNTO]);
 
   function actualizarCampo(campo, valor) {
     setDatos((prev) => ({ ...prev, [campo]: valor }));
@@ -140,6 +154,7 @@ export default function App() {
       {paso === 3 && tipo && (
         <PasoFormulario
           secciones={tipo.secciones}
+          estadoBaterias={estadoBaterias(datos, tipo.reglaBaterias)}
           datos={datos}
           onCambiar={actualizarCampo}
           onSiguiente={() => setPaso(4)}
