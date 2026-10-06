@@ -49,7 +49,9 @@ Pasos del asistente:
 ## Publicar en Render
 
 El archivo `render.yaml` ya trae la configuración (un solo servicio: el
-backend entrega también la página).
+backend entrega también la página). Corre con Docker (ver `Dockerfile`)
+para tener LibreOffice, que convierte el informe a PDF. En Windows sin
+LibreOffice, la conversión local usa el Word instalado.
 
 1. En render.com: **New → Blueprint** y elegir este repositorio.
 2. Completar las variables que pide:
