@@ -7,6 +7,12 @@ async function leerError(res, porDefecto) {
   return new Error(data.error || porDefecto);
 }
 
+export async function obtenerClientes() {
+  const res = await fetch(`${API_URL}/api/clientes`);
+  if (!res.ok) throw await leerError(res, "No se pudo obtener la lista de clientes.");
+  return res.json();
+}
+
 export async function obtenerTipos() {
   const res = await fetch(`${API_URL}/api/tipos`);
   if (!res.ok) throw await leerError(res, "No se pudo obtener la lista de tipos de informe.");

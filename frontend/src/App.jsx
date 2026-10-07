@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { obtenerTipos, leerHoja, generarInforme } from "./api";
+import { obtenerClientes, obtenerTipos, leerHoja, generarInforme } from "./api";
 import PasoTipo from "./components/PasoTipo";
 import PasoHoja from "./components/PasoHoja";
 import PasoFormulario from "./components/PasoFormulario";
@@ -7,10 +7,12 @@ import PasoFotos, { tituloFinal } from "./components/PasoFotos";
 import { estadoBaterias, sincronizarRecomendacion } from "./baterias";
 import PasoGenerar from "./components/PasoGenerar";
 
-const NOMBRES_PASOS = ["Tipo de informe", "Hoja de trabajo", "Datos", "Fotos", "Generar"];
+const NOMBRES_PASOS = ["Cliente y tipo", "Hoja de trabajo", "Datos", "Fotos", "Generar"];
 
 export default function App() {
   const [paso, setPaso] = useState(1);
+  const [clientes, setClientes] = useState([]);
+  const [clienteId, setClienteId] = useState("");
   const [tipos, setTipos] = useState([]);
   const [tipoId, setTipoId] = useState("");
   const [datos, setDatos] = useState({});
@@ -27,15 +29,23 @@ export default function App() {
   const [intentoVistaPrevia, setIntentoVistaPrevia] = useState(0);
 
   const tipo = tipos.find((t) => t.id === tipoId);
+  const cliente = clientes.find((c) => c.id === clienteId);
 
   useEffect(() => {
-    obtenerTipos()
-      .then((lista) => {
-        setTipos(lista);
-        if (lista.length === 1) setTipoId(lista[0].id);
+    Promise.all([obtenerClientes(), obtenerTipos()])
+      .then(([listaClientes, listaTipos]) => {
+        setClientes(listaClientes);
+        setTipos(listaTipos);
       })
       .catch((e) => setError(`${e.message} ¿Está abierto el backend?`));
   }, []);
+
+  function elegirCliente(id) {
+    setClienteId(id);
+    // Si el cliente tiene un solo tipo de informe, queda elegido de inmediato.
+    const delCliente = tipos.filter((t) => t.cliente === id);
+    setTipoId(delCliente.length === 1 ? delCliente[0].id : "");
+  }
 
   function elegirTipo() {
     setDatos({ ...tipo.valoresPorDefecto });
@@ -173,7 +183,7 @@ export default function App() {
         />
         <div className="app-header-texto">
           <h1>Generador de Informes</h1>
-          <p>{tipo ? tipo.nombre : "Fernández Fica S.A."}</p>
+          <p>{tipo && cliente ? `${cliente.nombre} · ${tipo.nombreCorto || tipo.nombre}` : "Fernández Fica S.A."}</p>
         </div>
       </header>
 
@@ -192,7 +202,17 @@ export default function App() {
 
       {error && <div className="error">{error}</div>}
 
-      {paso === 1 && <PasoTipo tipos={tipos} tipoId={tipoId} onElegir={setTipoId} onSiguiente={elegirTipo} />}
+      {paso === 1 && (
+        <PasoTipo
+          clientes={clientes}
+          tipos={tipos}
+          clienteId={clienteId}
+          tipoId={tipoId}
+          onElegirCliente={elegirCliente}
+          onElegirTipo={setTipoId}
+          onSiguiente={elegirTipo}
+        />
+      )}
 
       {paso === 2 && tipo && (
         <PasoHoja

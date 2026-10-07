@@ -1,13 +1,17 @@
 # Informes App (Fernández Fica)
 
-Aplicación web para generar informes técnicos en Word a partir de la foto
-del Pedido de Trabajo. Primero se elige **qué tipo de informe** se va a hacer;
-los campos y las fotos que se piden dependen de esa elección.
+Aplicación web para generar informes técnicos (Word y PDF) a partir de la
+foto del Pedido de Trabajo. Primero se elige el **cliente** y luego el **tipo
+de informe** de ese cliente; los campos y las fotos que se piden dependen de
+esa elección.
 
-Tipos disponibles:
+| Cliente | Tipos de informe |
+| --- | --- |
+| Cencosud | Próximamente |
+| Hospital Gustavo Fricke | Mantenimiento preventivo UPS |
 
-- **Informe de mantenimiento preventivo UPS — Hospital Gustavo Fricke**
-  (formato de `INFSAT_UPS Hospital Gustavo Fricke P4-A1 V1.docx`).
+Los clientes están en `backend/src/tipos/index.js` (`CLIENTES`); cada tipo de
+informe es un archivo en esa carpeta con `CLIENTE` = id del cliente.
 
 ## Uso
 
@@ -16,13 +20,15 @@ el navegador en `http://localhost:5174`. Para cerrar, cierra esas dos ventanas.
 
 Pasos del asistente:
 
-1. **Tipo de informe**.
+1. **Cliente y tipo de informe**.
 2. **Hoja de trabajo**: se sube la foto del PT y la IA lee los datos. Esa
    misma foto queda como «Hoja de trabajo» en el registro fotográfico.
 3. **Datos**: revisar/corregir. Lo que no está en la hoja queda en blanco.
-4. **Fotos**: panel sinóptico, placa característica y UPS durante la
-   mantención (la hoja de trabajo ya viene del paso 2).
-5. **Generar**: descarga el `.docx`.
+4. **Fotos**: 4 fotos del trabajo con su título (la hoja de trabajo ya viene
+   del paso 2).
+5. **Revisar y descargar**: vista previa obligatoria; luego Word, PDF o ambos.
+
+Ver también `Instructivo de uso - Informes App.docx`.
 
 ## Reglas del informe Fricke
 

@@ -5,6 +5,8 @@
 const path = require("path");
 
 const ID = "fricke-mantencion";
+const CLIENTE = "fricke";
+const NOMBRE_CORTO = "Mantenimiento preventivo UPS";
 const NOMBRE = "Informe de mantenimiento preventivo UPS — Hospital Gustavo Fricke";
 const PLANTILLA = path.join(__dirname, "..", "..", "plantillas", "fricke_mantencion.docx");
 
@@ -302,6 +304,8 @@ function nombreArchivo() {
 
 module.exports = {
   ID,
+  CLIENTE,
+  NOMBRE_CORTO,
   NOMBRE,
   PLANTILLA,
   SECCIONES,

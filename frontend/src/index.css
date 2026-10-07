@@ -757,3 +757,18 @@ select:focus {
 .revisado-ayuda {
   text-align: right;
 }
+
+/* ---------- Paso 1: cliente y tipo ---------- */
+.clientes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.sin-tipos {
+  margin: 0;
+  padding: 16px 18px;
+  border: 1.5px dashed var(--color-borde);
+  border-radius: 12px;
+  color: var(--color-texto-suave);
+}

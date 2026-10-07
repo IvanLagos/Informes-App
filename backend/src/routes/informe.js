@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 
-const { TIPOS, obtenerTipo, describirTipo } = require("../tipos");
+const { CLIENTES, TIPOS, obtenerTipo, describirTipo } = require("../tipos");
 const { leerHojaTrabajo } = require("../lib/vision");
 const { generarDocx } = require("../lib/docx");
 const { docxAPdf } = require("../lib/pdf");
@@ -31,6 +31,10 @@ function sanitizarNombreArchivo(nombre) {
     .replace(/[\\/:*?"<>|]/g, "")
     .trim();
 }
+
+router.get("/clientes", (req, res) => {
+  res.json(CLIENTES);
+});
 
 router.get("/tipos", (req, res) => {
   res.json(TIPOS.map(describirTipo));

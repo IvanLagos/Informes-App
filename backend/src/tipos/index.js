@@ -1,5 +1,14 @@
-// Tipos de informe disponibles. Para agregar uno nuevo, crea su archivo en
-// esta carpeta (con la misma forma que fricke.js) y súmalo a esta lista.
+// Clientes y tipos de informe disponibles. El técnico elige primero el
+// cliente y luego uno de sus tipos de informe.
+//
+// Para agregar un tipo de informe nuevo: crea su archivo en esta carpeta (con
+// la misma forma que fricke.js, con CLIENTE = id de uno de los CLIENTES de
+// abajo) y súmalo a TIPOS. Un cliente sin tipos aparece como "Próximamente".
+const CLIENTES = [
+  { id: "cencosud", nombre: "Cencosud" },
+  { id: "fricke", nombre: "Hospital Gustavo Fricke" },
+];
+
 const TIPOS = [require("./fricke")];
 
 function obtenerTipo(id) {
@@ -10,6 +19,8 @@ function obtenerTipo(id) {
 function describirTipo(t) {
   return {
     id: t.ID,
+    cliente: t.CLIENTE,
+    nombreCorto: t.NOMBRE_CORTO,
     nombre: t.NOMBRE,
     secciones: t.SECCIONES,
     fotos: t.FOTOS.map(({ clave, etiqueta, tituloPorDefecto, anchoCm, altoCm }) => ({
@@ -26,4 +37,4 @@ function describirTipo(t) {
   };
 }
 
-module.exports = { TIPOS, obtenerTipo, describirTipo };
+module.exports = { CLIENTES, TIPOS, obtenerTipo, describirTipo };
