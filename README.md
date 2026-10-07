@@ -5,13 +5,26 @@ foto del Pedido de Trabajo. Primero se elige el **cliente** y luego el **tipo
 de informe** de ese cliente; los campos y las fotos que se piden dependen de
 esa elección.
 
-| Cliente | Tipos de informe |
-| --- | --- |
-| Cencosud | Próximamente |
-| Hospital Gustavo Fricke | Mantenimiento preventivo UPS |
+| Cliente | Tipos de informe | Plantilla |
+| --- | --- | --- |
+| Cencosud | Mantenimiento preventivo UPS (con checklist de 3 páginas) | `Cencosud_Mantencion Preventiva.docx` |
+| Hospital Gustavo Fricke | Mantenimiento preventivo UPS | `Hospital_Gustavo_Fricke_Mantencion Preventiva.docx` |
 
 Los clientes están en `backend/src/tipos/index.js` (`CLIENTES`); cada tipo de
 informe es un archivo en esa carpeta con `CLIENTE` = id del cliente.
+
+### Plantillas (se editan en Word)
+
+Las plantillas están en `backend/plantillas/` y se pueden editar directamente
+en Word. Reglas para no romperlas:
+
+- Los textos `{{NOMBRE}}` son los datos que llena la app: no borrarlos ni
+  cambiarles el nombre.
+- Cada foto se ubica por el texto que la antecede (ej. `{{FOTO1_TITULO}}`, el
+  título "Registro de hoja de trabajo" o "Registro de hoja check list de
+  asistencia técnica"): conservar esos textos y una imagen después de cada uno.
+- Si se cambia el nombre del archivo, hay que actualizar `PLANTILLA` en el
+  archivo del tipo (`backend/src/tipos/*.js`).
 
 ## Uso
 

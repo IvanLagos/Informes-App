@@ -1,6 +1,10 @@
 """
-Crea plantillas/fricke_mantencion.docx a partir del informe original de
-Hospital Gustavo Fricke, reemplazando los datos variables por {{TOKENS}}.
+HISTÓRICO — desde el 07-10-2026 las plantillas se editan directamente en
+Word (backend/plantillas/*.docx). Correr este script SOBRESCRIBE la plantilla
+de Fricke y borra los cambios hechos a mano en Word.
+
+Crea la plantilla de Fricke a partir del informe original de Hospital Gustavo
+Fricke, reemplazando los datos variables por {{TOKENS}}.
 La portada se toma del informe de Clínica Los Carrera.
 
 Solo hace falta correrlo de nuevo si cambia alguno de los dos informes:
@@ -18,7 +22,7 @@ PORTADA = (
     if len(sys.argv) > 2
     else ESCRITORIO / "INFSAT_Reporte Mantenimiento Preventivo_UPS MASBC 60KVA_Clinica Los Carrera.docx"
 )
-DESTINO = Path(__file__).resolve().parent.parent / "plantillas" / "fricke_mantencion.docx"
+DESTINO = Path(__file__).resolve().parent.parent / "plantillas" / "Hospital_Gustavo_Fricke_Mantencion Preventiva.docx"
 
 RE_PARRAFO = re.compile(r"<w:p[ >].*?</w:p>", re.S)
 RE_TEXTO = re.compile(r"(<w:t[^>]*>)([^<]*)(</w:t>)")

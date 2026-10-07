@@ -8,7 +8,8 @@ const ID = "fricke-mantencion";
 const CLIENTE = "fricke";
 const NOMBRE_CORTO = "Mantenimiento preventivo UPS";
 const NOMBRE = "Informe de mantenimiento preventivo UPS — Hospital Gustavo Fricke";
-const PLANTILLA = path.join(__dirname, "..", "..", "plantillas", "fricke_mantencion.docx");
+// La plantilla se edita directamente en Word (los textos {{...}} son los datos que llena la app).
+const PLANTILLA = path.join(__dirname, "..", "..", "plantillas", "Hospital_Gustavo_Fricke_Mantencion Preventiva.docx");
 
 const SI_NO = ["Si", "No"];
 
@@ -95,11 +96,13 @@ const TITULOS_FOTO = [
 // Fotos del registro fotográfico, con el tamaño (cm) que tienen en el informe.
 // Las 4 del trabajo van en una tabla 2x2 con un título elegible cada una.
 const FOTOS = [
-  { clave: "foto1", etiqueta: "Foto de trabajo N°1", tituloPorDefecto: "Placa informativa", rid: "rId8", archivo: "image1.jpeg", anchoCm: 7, altoCm: 7 },
-  { clave: "foto2", etiqueta: "Foto de trabajo N°2", tituloPorDefecto: "Registro de UPS en sala de computación", rid: "rId9", archivo: "image2.jpeg", anchoCm: 7, altoCm: 7 },
-  { clave: "foto3", etiqueta: "Foto de trabajo N°3", tituloPorDefecto: "Registro de UPS Operativa y sin alarmas", rid: "rId10", archivo: "image3.jpeg", anchoCm: 7, altoCm: 7 },
-  { clave: "foto4", etiqueta: "Foto de trabajo N°4", tituloPorDefecto: "Registro post Mantenimiento Preventivo", rid: "rId11", archivo: "image4.jpeg", anchoCm: 7, altoCm: 7 },
-  { clave: "hoja", etiqueta: "Hoja de trabajo de asistencia técnica", rid: "rId12", archivo: "image5.jpeg", anchoCm: 14, altoCm: 17.02 },
+  // `ancla` = texto de la plantilla tras el cual va la foto (ver ubicarFotos en lib/docx.js).
+  // `grupo` = bloque del paso Fotos donde se pide (trabajo / hoja / checklist).
+  { clave: "foto1", grupo: "trabajo", etiqueta: "Foto de trabajo N°1", tituloPorDefecto: "Placa informativa", ancla: "{{FOTO1_TITULO}}", anchoCm: 7, altoCm: 7 },
+  { clave: "foto2", grupo: "trabajo", etiqueta: "Foto de trabajo N°2", tituloPorDefecto: "Registro de UPS en sala de computación", ancla: "{{FOTO2_TITULO}}", anchoCm: 7, altoCm: 7 },
+  { clave: "foto3", grupo: "trabajo", etiqueta: "Foto de trabajo N°3", tituloPorDefecto: "Registro de UPS Operativa y sin alarmas", ancla: "{{FOTO3_TITULO}}", anchoCm: 7, altoCm: 7 },
+  { clave: "foto4", grupo: "trabajo", etiqueta: "Foto de trabajo N°4", tituloPorDefecto: "Registro post Mantenimiento Preventivo", ancla: "{{FOTO4_TITULO}}", anchoCm: 7, altoCm: 7 },
+  { clave: "hoja", grupo: "hoja", etiqueta: "Hoja de trabajo de asistencia técnica", ancla: "Registro de hoja de trabajo", anchoCm: 14, altoCm: 17.02 },
 ];
 
 // Foto que se reutiliza como "hoja de trabajo" a partir de la que se sube para la lectura con IA.

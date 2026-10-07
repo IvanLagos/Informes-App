@@ -9,7 +9,7 @@ const CLIENTES = [
   { id: "fricke", nombre: "Hospital Gustavo Fricke" },
 ];
 
-const TIPOS = [require("./fricke")];
+const TIPOS = [require("./cencosud"), require("./fricke")];
 
 function obtenerTipo(id) {
   return TIPOS.find((t) => t.ID === id);
@@ -23,8 +23,9 @@ function describirTipo(t) {
     nombreCorto: t.NOMBRE_CORTO,
     nombre: t.NOMBRE,
     secciones: t.SECCIONES,
-    fotos: t.FOTOS.map(({ clave, etiqueta, tituloPorDefecto, anchoCm, altoCm }) => ({
+    fotos: t.FOTOS.map(({ clave, grupo, etiqueta, tituloPorDefecto, anchoCm, altoCm }) => ({
       clave,
+      grupo,
       etiqueta,
       tituloPorDefecto,
       anchoCm,
