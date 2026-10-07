@@ -1,17 +1,22 @@
 """
 Crea plantillas/fricke_mantencion.docx a partir del informe original de
 Hospital Gustavo Fricke, reemplazando los datos variables por {{TOKENS}}.
+La portada se toma del informe de Clínica Los Carrera.
 
-Solo hace falta correrlo de nuevo si cambia el informe original:
-    python scripts/crear_plantilla_fricke.py "<ruta al .docx original>"
+Solo hace falta correrlo de nuevo si cambia alguno de los dos informes:
+    python scripts/crear_plantilla_fricke.py "<informe Fricke .docx>" "<informe con la portada .docx>"
 """
 import re
 import sys
 import zipfile
 from pathlib import Path
 
-ORIGEN = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(
-    r"C:\Users\56981\OneDrive\Escritorio\ffica\INFSAT_UPS Hospital Gustavo Fricke P4-A1 V1.docx"
+ESCRITORIO = Path(r"C:\Users\56981\OneDrive\Escritorio")
+ORIGEN = Path(sys.argv[1]) if len(sys.argv) > 1 else ESCRITORIO / "INFSAT_UPS Hospital Gustavo Fricke P4-A1 V1.docx"
+PORTADA = (
+    Path(sys.argv[2])
+    if len(sys.argv) > 2
+    else ESCRITORIO / "INFSAT_Reporte Mantenimiento Preventivo_UPS MASBC 60KVA_Clinica Los Carrera.docx"
 )
 DESTINO = Path(__file__).resolve().parent.parent / "plantillas" / "fricke_mantencion.docx"
 
@@ -150,6 +155,173 @@ def procesar_encabezado(hdr):
     return hdr
 
 
+# ---------------------------------------------------------------------------
+# Portada (tomada del informe de Clínica Los Carrera)
+# ---------------------------------------------------------------------------
+
+# Imágenes de la portada: rId en el informe de origen -> (rId nuevo, archivo nuevo).
+IMAGENES_PORTADA = {
+    "rId8": ("rIdPortada1", "portada1.jpeg"),
+    "rId9": ("rIdPortada2", "portada2.png"),
+    "rId10": ("rIdPortada3", "portada3.png"),
+    "rId11": ("rIdPortada4", "portada4.jpeg"),
+    "rId12": ("rIdPortada5", "portada5.png"),
+    "rId13": ("rIdPortada6", "portada6.png"),
+}
+RID_ENCABEZADO_PORTADA = "rIdPortadaEncabezado"
+TIPO_IMAGEN = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+TIPO_ENCABEZADO = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"
+
+# Datos de la tabla de la portada (fila -> valor). El N° de informe va fijo.
+VALORES_PORTADA = ["{{EMPRESA}}", "{{ATENCION}}", "{{ASUNTO}}", "{{FECHA_PORTADA}}", "4SAT010"]
+
+
+def renumerar_ids(xml, base):
+    """Evita choques de id de dibujos con los del informe de Fricke."""
+    return re.sub(r'(<(?:wp:docPr|[a-z]+:cNvPr) id=")(\d+)"', lambda m: f'{m.group(1)}{base + int(m.group(2))}"', xml)
+
+
+def extraer_portada(zportada):
+    """Devuelve (xml de la portada, archivos de imagen) del informe de origen.
+    La portada es: el dibujo de fondo (bloque gris, foto, logo), un párrafo y
+    la tabla flotante con los datos; luego se fuerza el salto de página."""
+    doc = zportada.read("word/document.xml").decode("utf-8")
+    cuerpo = doc[doc.find("<w:body>") + len("<w:body>"):]
+    elementos = list(re.finditer(r"<w:p[ >].*?</w:p>|<w:tbl>.*?</w:tbl>", cuerpo, re.S))
+    dibujo, vacio, tabla = (m.group(0) for m in elementos[:3])
+
+    # Tabla de datos: el valor de cada fila (2ª celda) pasa a ser un token.
+    filas = re.findall(r"<w:tr .*?</w:tr>", tabla, re.S)
+    for fila, valor in zip(filas, VALORES_PORTADA):
+        celdas = re.findall(r"<w:tc>.*?</w:tc>", fila, re.S)
+        nueva_celda = RE_PARRAFO.sub(lambda m: fijar_texto(m.group(0), valor), celdas[1], count=1)
+        tabla = tabla.replace(fila, fila.replace(celdas[1], nueva_celda), 1)
+    # La tabla se ubica respecto de la página (y no del texto) para que caiga
+    # sobre el bloque gris aunque el informe de Fricke tenga otro margen superior.
+    tabla = re.sub(r'w:vertAnchor="text"', 'w:vertAnchor="page"', tabla)
+    tabla = re.sub(r'w:tblpY="-?\d+"', 'w:tblpY="2180"', tabla)
+
+    portada = dibujo + vacio + tabla + '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
+    for viejo, (nuevo, _) in IMAGENES_PORTADA.items():
+        portada = re.sub(rf'(r:(?:embed|id|link)="){viejo}"', rf'\g<1>{nuevo}"', portada)
+    portada = renumerar_ids(portada, 1000)
+
+    rels = zportada.read("word/_rels/document.xml.rels").decode("utf-8")
+    archivos = {}
+    for viejo, (_, archivo) in IMAGENES_PORTADA.items():
+        destino = re.search(rf'Id="{viejo}"[^>]*Target="([^"]+)"', rels).group(1)
+        archivos[f"word/media/{archivo}"] = zportada.read(f"word/{destino}")
+    return portada, archivos
+
+
+def extraer_encabezado_portada(zportada):
+    """Encabezado de la portada ("REPORTE TÉCNICO DE MANTENCIÓN" + logo)."""
+    rels = zportada.read("word/_rels/document.xml.rels").decode("utf-8")
+    doc = zportada.read("word/document.xml").decode("utf-8")
+    sect = re.findall(r"<w:sectPr.*?</w:sectPr>", doc, re.S)[-1]
+    rid = re.search(r'<w:headerReference w:type="default" r:id="(\w+)"', sect).group(1)
+    nombre = re.search(rf'Id="{rid}"[^>]*Target="([^"]+)"', rels).group(1)
+    xml = renumerar_ids(zportada.read(f"word/{nombre}").decode("utf-8"), 2000)
+    xml = fijar_a_pagina(xml, sect)
+    rels_hdr = zportada.read(f"word/_rels/{nombre}.rels").decode("utf-8")
+    archivos = {}
+    for rid_img, destino in re.findall(r'Id="(\w+)"[^>]*Target="media/([^"]+)"', rels_hdr):
+        nuevo = f"portada_encabezado_{destino}"
+        archivos[f"word/media/{nuevo}"] = zportada.read(f"word/media/{destino}")
+        rels_hdr = rels_hdr.replace(f'Target="media/{destino}"', f'Target="media/{nuevo}"')
+    return xml, rels_hdr, archivos
+
+
+def fijar_a_pagina(xml, sect):
+    """El título y el logo del encabezado están ubicados respecto del margen
+    o del párrafo, que en el informe de Fricke quedan más abajo. Se pasan a
+    posiciones respecto de la página, calculadas con los márgenes del
+    informe de origen, para que queden igual que allá."""
+    EMU_POR_TWIP = 635
+    margen = abs(int(re.search(r'<w:pgMar [^>]*w:top="(-?\d+)"', sect).group(1))) * EMU_POR_TWIP
+    encabezado = int(re.search(r'<w:pgMar [^>]*w:header="(\d+)"', sect).group(1)) * EMU_POR_TWIP
+    base = {"margin": margen, "paragraph": encabezado}
+
+    def ancla(m):
+        relativo, offset = m.group(1), int(m.group(2))
+        if relativo not in base:
+            return m.group(0)
+        return f'<wp:positionV relativeFrom="page"><wp:posOffset>{offset + base[relativo]}</wp:posOffset>'
+
+    xml = re.sub(r'<wp:positionV relativeFrom="(\w+)"><wp:posOffset>(-?\d+)</wp:posOffset>', ancla, xml)
+
+    # Versión VML (para Word antiguo) del cuadro de texto del título.
+    def vml(m):
+        estilo = m.group(0)
+        if "mso-position-vertical-relative:margin" not in estilo:
+            return estilo
+        estilo = re.sub(
+            r"margin-top:(-?[\d.]+)pt",
+            lambda t: f"margin-top:{float(t.group(1)) + margen / 12700:.1f}pt",
+            estilo,
+        )
+        return estilo.replace("mso-position-vertical-relative:margin", "mso-position-vertical-relative:page")
+
+    return re.sub(r'style="[^"]*"', vml, xml)
+
+
+def insertar_portada(doc, portada):
+    """La portada reemplaza el cuadro de datos inicial del informe de Fricke
+    (todo lo que hay antes del índice), y el índice pasa a la página 2."""
+    inicio = doc.find("<w:body>") + len("<w:body>")
+    indice = doc.rfind("<w:p ", 0, doc.find(">INDICE<"))
+    doc = doc[:inicio] + portada + doc[indice:]
+
+    # Primera página con encabezado propio (el de la portada); el pie se mantiene.
+    def sect(m):
+        s = m.group(0)
+        pie = re.search(r'<w:footerReference w:type="default" r:id="(\w+)"/>', s).group(1)
+        refs = (
+            f'<w:headerReference w:type="first" r:id="{RID_ENCABEZADO_PORTADA}"/>'
+            f'<w:footerReference w:type="first" r:id="{pie}"/>'
+        )
+        s = s.replace("<w:pgSz", refs + "<w:pgSz", 1) if "<w:headerReference" not in s else re.sub(
+            r"(<w:headerReference [^>]*/>)", r"\1" + refs, s, count=1
+        )
+        # El orden importa en Word: titlePg va antes de docGrid.
+        return s.replace("<w:docGrid", "<w:titlePg/><w:docGrid", 1) if "<w:docGrid" in s else s.replace(
+            "</w:sectPr>", "<w:titlePg/></w:sectPr>"
+        )
+
+    doc = re.sub(r"<w:sectPr[ >].*?</w:sectPr>(?=</w:body>)", sect, doc, flags=re.S)
+
+    # Índice: con la portada, cada sección queda una página más adelante.
+    def sumar_pagina(m):
+        p = m.group(0)
+        if "PAGEREF" not in p:
+            return p
+        textos = list(RE_TEXTO.finditer(p))
+        ultimo = next((t for t in reversed(textos) if t.group(2).strip().isdigit()), None)
+        if not ultimo:
+            return p
+        nuevo = f"{ultimo.group(1)}{int(ultimo.group(2)) + 1}{ultimo.group(3)}"
+        return p[: ultimo.start()] + nuevo + p[ultimo.end():]
+
+    return RE_PARRAFO.sub(sumar_pagina, doc)
+
+
+def agregar_relaciones(rels):
+    nuevas = "".join(
+        f'<Relationship Id="{nuevo}" Type="{TIPO_IMAGEN}" Target="media/{archivo}"/>'
+        for nuevo, archivo in IMAGENES_PORTADA.values()
+    )
+    nuevas += f'<Relationship Id="{RID_ENCABEZADO_PORTADA}" Type="{TIPO_ENCABEZADO}" Target="header_portada.xml"/>'
+    return rels.replace("</Relationships>", nuevas + "</Relationships>")
+
+
+def agregar_tipos(tipos):
+    override = (
+        '<Override PartName="/word/header_portada.xml" '
+        'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>'
+    )
+    return tipos.replace("</Types>", override + "</Types>")
+
+
 def imagen_en_blanco():
     """JPEG gris claro: reemplaza las fotos del informe original (equipos y
     hoja de trabajo con datos y firmas). La app las sobrescribe al generar."""
@@ -167,16 +339,30 @@ FOTOS_ORIGINALES = {f"word/media/image{i}.jpeg" for i in range(1, 6)}
 
 def main():
     DESTINO.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(PORTADA) as zportada:
+        portada, imagenes_portada = extraer_portada(zportada)
+        encabezado, rels_encabezado, imagenes_encabezado = extraer_encabezado_portada(zportada)
+
     with zipfile.ZipFile(ORIGEN) as zin, zipfile.ZipFile(DESTINO, "w", zipfile.ZIP_DEFLATED) as zout:
         for item in zin.infolist():
             datos = zin.read(item.filename)
             if item.filename in FOTOS_ORIGINALES:
                 datos = imagen_en_blanco()
             elif item.filename == "word/document.xml":
-                datos = procesar_documento(datos.decode("utf-8")).encode("utf-8")
+                doc = procesar_documento(datos.decode("utf-8"))
+                datos = insertar_portada(doc, portada).encode("utf-8")
             elif item.filename == "word/header1.xml":
                 datos = procesar_encabezado(datos.decode("utf-8")).encode("utf-8")
+            elif item.filename == "word/_rels/document.xml.rels":
+                datos = agregar_relaciones(datos.decode("utf-8")).encode("utf-8")
+            elif item.filename == "[Content_Types].xml":
+                datos = agregar_tipos(datos.decode("utf-8")).encode("utf-8")
             zout.writestr(item, datos)
+
+        for nombre, datos in {**imagenes_portada, **imagenes_encabezado}.items():
+            zout.writestr(nombre, datos)
+        zout.writestr("word/header_portada.xml", encabezado)
+        zout.writestr("word/_rels/header_portada.xml.rels", rels_encabezado)
     print(f"Plantilla creada: {DESTINO}")
 
 

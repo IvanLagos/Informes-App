@@ -225,6 +225,7 @@ function prepararDocumento(d) {
       ATENCION: d.ATENCION,
       ASUNTO: d.ASUNTO,
       FECHA_ASUNTO_TEXTO: fechaEnTexto(d.FECHA_ASUNTO),
+      FECHA_PORTADA: String(d.FECHA_ASUNTO || "").trim().replace(/-/g, "/"),
       FECHA_INFORME: d.FECHA_INFORME,
       MODELO_UPS: d.MODELO_UPS,
       NUM_SERIE: d.NUM_SERIE,
