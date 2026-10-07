@@ -579,6 +579,9 @@ def main():
                 datos = insertar_portada(doc, portada).encode("utf-8")
             elif item.filename == "word/header1.xml":
                 datos = procesar_encabezado(datos.decode("utf-8")).encode("utf-8")
+            elif item.filename == "word/footer1.xml":
+                # Certificación vigente.
+                datos = datos.decode("utf-8").replace("ISO 9001-2008", "ISO 9001-2015").encode("utf-8")
             elif item.filename == "word/_rels/document.xml.rels":
                 datos = agregar_relaciones(datos.decode("utf-8")).encode("utf-8")
             elif item.filename == "[Content_Types].xml":
