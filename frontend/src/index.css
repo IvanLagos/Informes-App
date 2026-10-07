@@ -705,3 +705,10 @@ select:focus {
   font-size: 0.8rem;
   color: var(--color-texto-suave);
 }
+
+/* Campo obligatorio vacío */
+.campo--falta input,
+.campo--falta textarea {
+  border-color: var(--color-error);
+  background: var(--color-error-fondo);
+}

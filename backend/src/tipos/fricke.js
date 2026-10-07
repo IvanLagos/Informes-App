@@ -13,13 +13,15 @@ const SI_NO = ["Si", "No"];
 // Secciones y campos que se muestran en el formulario (mismo orden del informe).
 const SECCIONES = [
   {
-    titulo: "Encabezado",
+    // Empresa, Atención, Asunto y Fecha del servicio van en la portada (el
+    // N° de informe es fijo: 4SAT010). La fecha del informe va en el encabezado.
+    titulo: "Portada y encabezado",
     campos: [
-      { clave: "EMPRESA", etiqueta: "Empresa" },
-      { clave: "ATENCION", etiqueta: "Atención" },
-      { clave: "ASUNTO", etiqueta: "Asunto" },
-      { clave: "FECHA_ASUNTO", etiqueta: "Fecha del servicio (DD-MM-AAAA)" },
-      { clave: "FECHA_INFORME", etiqueta: "Fecha del informe (DD/MM/AAAA)" },
+      { clave: "EMPRESA", etiqueta: "Empresa", obligatorio: true },
+      { clave: "ATENCION", etiqueta: "Atención", obligatorio: true },
+      { clave: "ASUNTO", etiqueta: "Asunto", obligatorio: true },
+      { clave: "FECHA_ASUNTO", etiqueta: "Fecha del servicio — portada (DD-MM-AAAA)", obligatorio: true },
+      { clave: "FECHA_INFORME", etiqueta: "Fecha del informe — encabezado (DD/MM/AAAA)", obligatorio: true },
     ],
   },
   {
@@ -181,6 +183,17 @@ function normalizarPotencia(valor) {
     .replace(/^(\d+(?:[.,]\d+)?)\s*kva$/i, "$1 kVA");
 }
 
+/** "5/10/26", "05.10.2026", "05-10-26"… -> "05-10-2026" (vacío si no es una fecha válida). */
+function normalizarFecha(valor) {
+  const m = /^\s*(\d{1,2})\s*[-/.·]\s*(\d{1,2})\s*[-/.·]\s*(\d{2}|\d{4})\s*$/.exec(String(valor || ""));
+  if (!m) return "";
+  const dia = parseInt(m[1], 10);
+  const mes = parseInt(m[2], 10);
+  if (dia < 1 || dia > 31 || mes < 1 || mes > 12) return "";
+  const anio = m[3].length === 2 ? `20${m[3]}` : m[3];
+  return `${String(dia).padStart(2, "0")}-${String(mes).padStart(2, "0")}-${anio}`;
+}
+
 function contarVoltajes(lista) {
   return (Array.isArray(lista) ? lista : []).filter((v) => String(v).trim() !== "").length;
 }
@@ -188,7 +201,8 @@ function contarVoltajes(lista) {
 /** Convierte lo leído por la IA en valores del formulario (aplica las reglas acordadas). */
 function interpretarLectura(leido) {
   const datos = valoresPorDefecto();
-  for (const clave of ["EMPRESA", "FECHA_ASUNTO", "MODELO_UPS", "NUM_SERIE", "CANT_BATERIAS", "MODELO_BATERIAS", "ANIO_BATERIAS", "DATA_UPS"]) {
+  datos.FECHA_ASUNTO = normalizarFecha(leido.FECHA_ASUNTO);
+  for (const clave of ["EMPRESA", "MODELO_UPS", "NUM_SERIE", "CANT_BATERIAS", "MODELO_BATERIAS", "ANIO_BATERIAS", "DATA_UPS"]) {
     if (leido[clave]) datos[clave] = String(leido[clave]).trim();
   }
   datos.POTENCIA = normalizarPotencia(leido.POTENCIA);
@@ -243,7 +257,7 @@ function prepararDocumento(d) {
       ATENCION: d.ATENCION,
       ASUNTO: d.ASUNTO,
       FECHA_ASUNTO_TEXTO: fechaEnTexto(d.FECHA_ASUNTO),
-      FECHA_PORTADA: String(d.FECHA_ASUNTO || "").trim().replace(/-/g, "/"),
+      FECHA_PORTADA: (normalizarFecha(d.FECHA_ASUNTO) || String(d.FECHA_ASUNTO || "").trim()).replace(/-/g, "/"),
       FECHA_INFORME: d.FECHA_INFORME,
       MODELO_UPS: d.MODELO_UPS,
       NUM_SERIE: d.NUM_SERIE,

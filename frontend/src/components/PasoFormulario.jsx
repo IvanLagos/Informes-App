@@ -20,6 +20,11 @@ function NotaBaterias({ estado, modelo }) {
 }
 
 export default function PasoFormulario({ secciones, estadoBaterias, datos, onCambiar, onSiguiente, onVolver }) {
+  const faltantes = secciones
+    .flatMap((s) => s.campos)
+    .filter((c) => c.obligatorio && !String(datos[c.clave] || "").trim())
+    .map((c) => c.etiqueta);
+
   return (
     <section className="paso">
       <h2>Paso 3: Revisa y corrige los datos</h2>
@@ -34,8 +39,16 @@ export default function PasoFormulario({ secciones, estadoBaterias, datos, onCam
           {seccion.componente === "tablaBaterias" && <TablaBaterias datos={datos} onCambiar={onCambiar} />}
           <div className="formulario">
             {seccion.campos.map((campo) => (
-              <label key={campo.clave} className={`campo ${campo.tipo === "largo" ? "ancho" : ""}`}>
-                <span>{campo.etiqueta}</span>
+              <label
+                key={campo.clave}
+                className={`campo ${campo.tipo === "largo" ? "ancho" : ""} ${
+                  campo.obligatorio && !String(datos[campo.clave] || "").trim() ? "campo--falta" : ""
+                }`}
+              >
+                <span>
+                  {campo.etiqueta}
+                  {campo.obligatorio && " *"}
+                </span>
                 {campo.tipo === "largo" && (
                   <textarea value={datos[campo.clave] || ""} onChange={(e) => onCambiar(campo.clave, e.target.value)} rows={3} />
                 )}
@@ -60,11 +73,15 @@ export default function PasoFormulario({ secciones, estadoBaterias, datos, onCam
         </div>
       ))}
 
+      {faltantes.length > 0 && (
+        <div className="error">Completa los datos obligatorios (*): {faltantes.join(", ")}.</div>
+      )}
+
       <div className="acciones">
         <button type="button" onClick={onVolver}>
           Volver
         </button>
-        <button type="button" className="principal" onClick={onSiguiente}>
+        <button type="button" className="principal" onClick={onSiguiente} disabled={faltantes.length > 0}>
           Siguiente
         </button>
       </div>

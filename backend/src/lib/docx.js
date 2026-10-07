@@ -75,13 +75,33 @@ async function generarDocx({ plantillaPath, valores, parrafos, fotos }) {
   }
   zip.file("word/document.xml", doc);
 
-  const encabezados = Object.keys(zip.files).filter((n) => /^word\/(header|footer)\d+\.xml$/.test(n));
+  const encabezados = Object.keys(zip.files).filter((n) => /^word\/(header|footer)[^/]*\.xml$/.test(n));
   for (const nombre of encabezados) {
     const xml = await zip.file(nombre).async("string");
     zip.file(nombre, reemplazarTokens(xml, valores));
   }
 
+  const core = zip.file("docProps/core.xml");
+  if (core) zip.file("docProps/core.xml", propiedadesNuevas(await core.async("string")));
+
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+}
+
+/**
+ * Propiedades del archivo (Archivo → Información en Word): la plantilla trae
+ * las del informe original (fechas de 2021, autor, última impresión). Cada
+ * informe queda con la fecha y hora en que se genera.
+ */
+function propiedadesNuevas(core) {
+  const ahora = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const autor = "Fernández Fica S.A.";
+  return core
+    .replace(/(<dcterms:created[^>]*>)[^<]*/, `$1${ahora}`)
+    .replace(/(<dcterms:modified[^>]*>)[^<]*/, `$1${ahora}`)
+    .replace(/(<dc:creator>)[^<]*/, `$1${autor}`)
+    .replace(/(<cp:lastModifiedBy>)[^<]*/, `$1${autor}`)
+    .replace(/(<cp:revision>)[^<]*/, "$11")
+    .replace(/<cp:lastPrinted>[^<]*<\/cp:lastPrinted>/, "");
 }
 
 module.exports = { generarDocx };
