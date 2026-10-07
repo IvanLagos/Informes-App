@@ -133,6 +133,12 @@ def agregar_titulo_hoja(doc):
     )
     doc = doc[: leyenda.start()] + titulo + doc[leyenda.end():]
 
+    # "Dpto. de Servicio Técnico" queda siempre junto a "FERNANDEZ FICA S.A."
+    # (en la misma página).
+    firma = next(m for m in RE_PARRAFO.finditer(doc) if "Dpto. de Servicio" in textos_de(m.group(0)))
+    con_keep = firma.group(0).replace("<w:pPr>", "<w:pPr><w:keepNext/>", 1)
+    doc = doc[: firma.start()] + con_keep + doc[firma.end():]
+
     # Línea del índice: copia de la del registro fotográfico (sección 5), con
     # la página siguiente (la hoja de trabajo va en la página después de las fotos).
     linea_fotos = next(m for m in RE_PARRAFO.finditer(doc) if "TDC1" in m.group(0) and "Registro fotogr" in m.group(0))

@@ -99,7 +99,7 @@ const FOTOS = [
   { clave: "foto2", etiqueta: "Foto de trabajo N°2", tituloPorDefecto: "Registro de UPS en sala de computación", rid: "rId9", archivo: "image2.jpeg", anchoCm: 7, altoCm: 7 },
   { clave: "foto3", etiqueta: "Foto de trabajo N°3", tituloPorDefecto: "Registro de UPS Operativa y sin alarmas", rid: "rId10", archivo: "image3.jpeg", anchoCm: 7, altoCm: 7 },
   { clave: "foto4", etiqueta: "Foto de trabajo N°4", tituloPorDefecto: "Registro post Mantenimiento Preventivo", rid: "rId11", archivo: "image4.jpeg", anchoCm: 7, altoCm: 7 },
-  { clave: "hoja", etiqueta: "Hoja de trabajo de asistencia técnica", rid: "rId12", archivo: "image5.jpeg", anchoCm: 16, altoCm: 19.45 },
+  { clave: "hoja", etiqueta: "Hoja de trabajo de asistencia técnica", rid: "rId12", archivo: "image5.jpeg", anchoCm: 14, altoCm: 17.02 },
 ];
 
 // Foto que se reutiliza como "hoja de trabajo" a partir de la que se sube para la lectura con IA.
