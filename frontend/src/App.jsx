@@ -22,6 +22,9 @@ export default function App() {
   const [formatoDescarga, setFormatoDescarga] = useState("docx");
   // { cargando } | { blob, nombre, url } | { error }
   const [vistaPrevia, setVistaPrevia] = useState({});
+  // La descarga exige haber revisado la vista previa (se reinicia con cada vista previa nueva).
+  const [revisado, setRevisado] = useState(false);
+  const [intentoVistaPrevia, setIntentoVistaPrevia] = useState(0);
 
   const tipo = tipos.find((t) => t.id === tipoId);
 
@@ -115,6 +118,7 @@ export default function App() {
     let cancelado = false;
     let url = null;
     setVistaPrevia({ cargando: true });
+    setRevisado(false);
     pedirInforme("pdf")
       .then(({ blob, nombre }) => {
         if (cancelado) return;
@@ -128,7 +132,7 @@ export default function App() {
       setVistaPrevia({});
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paso]);
+  }, [paso, intentoVistaPrevia]);
 
   function nombrePdf() {
     const propio = nombreArchivo.trim().replace(/\.docx$|\.pdf$/i, "").replace(/[\\/:*?"<>|]/g, "").trim();
@@ -136,6 +140,7 @@ export default function App() {
   }
 
   async function manejarGenerar() {
+    if (!vistaPrevia.url || !revisado) return;
     setError("");
     setCargando(true);
     try {
@@ -229,6 +234,9 @@ export default function App() {
           nombreArchivo={nombreArchivo}
           onCambiarNombre={setNombreArchivo}
           vistaPrevia={vistaPrevia}
+          revisado={revisado}
+          onCambiarRevisado={setRevisado}
+          onReintentarVistaPrevia={() => setIntentoVistaPrevia((n) => n + 1)}
           formato={formatoDescarga}
           onCambiarFormato={setFormatoDescarga}
           onGenerar={manejarGenerar}

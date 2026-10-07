@@ -401,6 +401,37 @@ def agregar_seccion_baterias(doc, seccion):
     return doc[: linea_eval.end()] + nueva + doc[linea_eval.end():]
 
 
+def eliminar_rutina(doc):
+    """Quita la sección "Rutina de Servicio de Mantención Preventiva" (título,
+    subsecciones y sus 2 páginas) y su línea del índice; las secciones
+    siguientes bajan un número y dos páginas."""
+    parrafos = list(RE_PARRAFO.finditer(doc))
+    inicio = next(
+        p for p in parrafos if "Ttulo1" in p.group(0) and "Rutina de Servicio" in textos_de(p.group(0))
+    ).start()
+    fin = next(
+        p for p in parrafos if "Ttulo1" in p.group(0) and "Registro fotogr" in textos_de(p.group(0))
+    ).start()
+    marcador = re.search(r'w:name="(_Toc\d+)"', doc[inicio:fin]).group(1)
+    doc = doc[:inicio] + doc[fin:]
+    paginas_quitadas = 2
+
+    lineas = [m for m in RE_PARRAFO.finditer(doc) if "TDC1" in m.group(0) and "PAGEREF" in m.group(0)]
+    quitar = next(i for i, m in enumerate(lineas) if f"PAGEREF {marcador}" in m.group(0))
+    for m in reversed(lineas[quitar:]):
+        p = m.group(0)
+        if f"PAGEREF {marcador}" in p:
+            doc = doc[: m.start()] + doc[m.end():]
+            continue
+        textos = [t for t in RE_TEXTO.finditer(p) if t.group(2).strip()]
+        numero, pagina = textos[0], textos[-1]
+        nuevo = p
+        for t, valor in ((pagina, int(pagina.group(2)) - paginas_quitadas), (numero, int(numero.group(2)) - 1)):
+            nuevo = nuevo[: t.start(2)] + str(valor) + nuevo[t.end(2):]
+        doc = doc[: m.start()] + nuevo + doc[m.end():]
+    return doc
+
+
 def renumerar_ids(xml, base):
     """Evita choques de id de dibujos con los del informe de Fricke."""
     return re.sub(r'(<(?:wp:docPr|[a-z]+:cNvPr) id=")(\d+)"', lambda m: f'{m.group(1)}{base + int(m.group(2))}"', xml)
@@ -576,6 +607,7 @@ def main():
             elif item.filename == "word/document.xml":
                 doc = procesar_documento(datos.decode("utf-8"))
                 doc = agregar_seccion_baterias(doc, seccion_baterias)
+                doc = eliminar_rutina(doc)
                 datos = insertar_portada(doc, portada).encode("utf-8")
             elif item.filename == "word/header1.xml":
                 datos = procesar_encabezado(datos.decode("utf-8")).encode("utf-8")

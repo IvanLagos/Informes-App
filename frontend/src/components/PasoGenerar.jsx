@@ -4,14 +4,18 @@ const FORMATOS = [
   { valor: "ambos", etiqueta: "Ambos (Word y PDF)" },
 ];
 
-function VistaPrevia({ vistaPrevia }) {
+function VistaPrevia({ vistaPrevia, onReintentar }) {
   if (vistaPrevia.cargando) {
     return <div className="vista-previa vista-previa--estado">Generando la vista previa del informe… puede tardar unos segundos.</div>;
   }
   if (vistaPrevia.error) {
     return (
-      <div className="vista-previa vista-previa--estado">
-        No se pudo generar la vista previa: {vistaPrevia.error}. Igual puedes descargar el informe.
+      <div className="vista-previa vista-previa--estado vista-previa--error">
+        <p>No se pudo generar la vista previa: {vistaPrevia.error}</p>
+        <p>Para descargar el informe primero hay que revisarlo.</p>
+        <button type="button" onClick={onReintentar}>
+          Reintentar vista previa
+        </button>
       </div>
     );
   }
@@ -38,13 +42,30 @@ export default function PasoGenerar({
   onCambiarNombre,
   formato,
   onCambiarFormato,
+  revisado,
+  onCambiarRevisado,
+  onReintentarVistaPrevia,
   onGenerar,
   onVolver,
 }) {
+  const vistaLista = Boolean(vistaPrevia.url);
+  const puedeDescargar = vistaLista && revisado && !cargando;
+
   return (
     <section className="paso">
       <h2>Paso 5: Revisa y descarga el informe</h2>
-      <VistaPrevia vistaPrevia={vistaPrevia} />
+      <VistaPrevia vistaPrevia={vistaPrevia} onReintentar={onReintentarVistaPrevia} />
+
+      {/* La descarga exige haber visto la vista previa y confirmarlo. */}
+      <label className={`revisado${vistaLista ? "" : " revisado--bloqueado"}`}>
+        <input
+          type="checkbox"
+          checked={revisado}
+          disabled={!vistaLista}
+          onChange={(e) => onCambiarRevisado(e.target.checked)}
+        />
+        Revisé la vista previa y el informe está correcto.
+      </label>
 
       <label className="campo ancho nombre-archivo">
         <span>Nombre del archivo (opcional)</span>
@@ -82,10 +103,17 @@ export default function PasoGenerar({
         <button type="button" onClick={onVolver} disabled={cargando}>
           Volver
         </button>
-        <button type="button" className="principal" onClick={onGenerar} disabled={cargando}>
+        <button type="button" className="principal" onClick={onGenerar} disabled={!puedeDescargar}>
           {cargando ? "Descargando…" : "Descargar informe"}
         </button>
       </div>
+      {!puedeDescargar && !cargando && (
+        <p className="vista-previa-ayuda revisado-ayuda">
+          {vistaLista
+            ? "Marca la casilla de revisión para habilitar la descarga."
+            : "La descarga se habilita cuando la vista previa esté lista y la hayas revisado."}
+        </p>
+      )}
     </section>
   );
 }
