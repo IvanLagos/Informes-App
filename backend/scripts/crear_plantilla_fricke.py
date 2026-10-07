@@ -215,6 +215,186 @@ TIPO_ENCABEZADO = "http://schemas.openxmlformats.org/officeDocument/2006/relatio
 VALORES_PORTADA = ["{{EMPRESA}}", "{{ATENCION}}", "{{ASUNTO}}", "{{FECHA_PORTADA}}", "4SAT010"]
 
 
+# ---------------------------------------------------------------------------
+# Sección "Registro de baterías" (tablas tomadas del informe de Los Carrera)
+# ---------------------------------------------------------------------------
+
+TITULO_BATERIAS = "Registro de baterías"
+MARCADOR_BATERIAS = "_TocBaterias"
+# Tabla "Profile Information": valor de cada fila (2ª celda).
+VALORES_PERFIL = ["{{BAT_PERFIL}}", "{{BAT_UBICACION}}", "{{MODELO_BATERIAS}}", "{{CANT_BATERIAS}}", "{{ANIO_BATERIAS}}"]
+# Tabla de resultados: fila -> (resistencia, total).
+VALORES_RESULTADOS = [
+    ("{{BAT_RES_PASS}}", "{{BAT_TOTAL_PASS}}"),
+    ("{{BAT_RES_WARNING}}", "{{BAT_TOTAL_WARNING}}"),
+    ("{{BAT_RES_FAIL}}", "{{BAT_TOTAL_FAIL}}"),
+]
+
+
+RE_ETIQUETA_BLOQUE = re.compile(r"<(/?)w:(p|tbl)(?=[ >/])[^>]*?(/?)>")
+
+
+def elementos_cuerpo(cuerpo):
+    """Párrafos y tablas de primer nivel del cuerpo, respetando el anidado
+    (tablas dentro de tablas, párrafos dentro de cuadros de texto)."""
+    elementos, profundidad, inicio = [], 0, None
+    for m in RE_ETIQUETA_BLOQUE.finditer(cuerpo):
+        cierre, autocierre = m.group(1), m.group(3)
+        if autocierre:
+            if profundidad == 0:
+                elementos.append(cuerpo[m.start() : m.end()])
+            continue
+        if not cierre:
+            if profundidad == 0:
+                inicio = m.start()
+            profundidad += 1
+        else:
+            profundidad -= 1
+            if profundidad == 0:
+                elementos.append(cuerpo[inicio : m.end()])
+    return elementos
+
+
+def textos_de(xml):
+    return "".join(t.group(2) for t in RE_TEXTO.finditer(xml))
+
+
+def reemplazar_primer_texto(xml, nuevo):
+    """Cambia solo el primer <w:t> (conserva el resto, ej. 'm Ω')."""
+    m = RE_TEXTO.search(xml)
+    apertura = m.group(1) if 'xml:space="preserve"' in m.group(1) else m.group(1).replace("<w:t", '<w:t xml:space="preserve"', 1)
+    return xml[: m.start()] + apertura + nuevo + m.group(3) + xml[m.end():]
+
+
+RE_ETIQUETA_TABLA = re.compile(r"<(/?)w:(tbl|tr|tc)(?=[ >/])[^>]*?(/?)>")
+
+
+def hijos(xml, etiqueta):
+    """Elementos `etiqueta` del nivel más externo de `xml` (ignora los de
+    tablas anidadas dentro de celdas)."""
+    encontrados, pila = [], []
+    for m in RE_ETIQUETA_TABLA.finditer(xml):
+        cierre, nombre, autocierre = m.groups()
+        if autocierre:
+            continue
+        if not cierre:
+            pila.append((nombre, m.start()))
+        else:
+            _, inicio = pila.pop()
+            if nombre == etiqueta:
+                encontrados.append((len(pila), xml[inicio : m.end()]))
+    if not encontrados:
+        return []
+    minimo = min(nivel for nivel, _ in encontrados)
+    return [x for nivel, x in encontrados if nivel == minimo]
+
+
+def tokenizar_tabla(tabla, por_fila):
+    """Aplica `por_fila(i, celdas) -> {indice_celda: xml_nuevo}` a cada fila."""
+    for i, fila in enumerate(hijos(tabla, "tr")):
+        celdas = hijos(fila, "tc")
+        nueva = fila
+        for k, xml in por_fila(i, celdas).items():
+            nueva = nueva.replace(celdas[k], xml, 1)
+        tabla = tabla.replace(fila, nueva, 1)
+    return tabla
+
+
+def extraer_seccion_baterias(zportada):
+    """Las tablas de la sección "Registro de Baterías" (barra azul, "Profile
+    Information" y la de resultados Pass/Warning/Fail), con tokens."""
+    doc = zportada.read("word/document.xml").decode("utf-8")
+    cuerpo = doc[doc.find("<w:body>") + len("<w:body>"):]
+    elementos = elementos_cuerpo(cuerpo)
+    titulo = next(i for i, e in enumerate(elementos) if "Registro de Bater" in textos_de(e) and "TDC" not in e)
+    fin = next(i for i in range(titulo, len(elementos)) if "Judgement" in textos_de(elementos[i]))
+    # Solo las tablas: los párrafos vacíos de entremedio traen estilo de
+    # título numerado y aparecerían como una sección vacía.
+    partes = [e for e in elementos[titulo + 1 : fin + 1] if e.startswith("<w:tbl")]
+
+    def perfil(i, celdas):
+        if i == 0:
+            return {}
+        valor = VALORES_PERFIL[i - 1]
+        return {1: RE_PARRAFO.sub(lambda m: fijar_texto(m.group(0), f"- {valor}"), celdas[1], count=1)}
+
+    def resultados(i, celdas):
+        if i == 0:
+            return {}
+        resistencia, total = VALORES_RESULTADOS[i - 1]
+        return {
+            2: reemplazar_primer_texto(celdas[2], f"{resistencia} "),
+            3: RE_PARRAFO.sub(lambda m: fijar_texto(m.group(0), total), celdas[3], count=1),
+        }
+
+    # Toda la sección es una tabla exterior (su borde izquierdo es la barra
+    # azul) que contiene las tablas "Profile Information" y la de resultados.
+    seccion = "".join(partes)
+    exterior = next(p for p in partes if p.startswith("<w:tbl"))
+    contenido = exterior[exterior.find(">") + 1 : exterior.rfind("</w:tbl>")]
+    for interior in hijos(contenido, "tbl"):
+        texto = textos_de(interior)
+        if "Profile" in texto:
+            seccion = seccion.replace(interior, tokenizar_tabla(interior, perfil), 1)
+        elif "Judgement" in texto:
+            seccion = seccion.replace(interior, tokenizar_tabla(interior, resultados), 1)
+    # Estilo de celda vacía que no existe en el informe de Fricke.
+    seccion = re.sub(r'<w:pStyle w:val="EmptyCellLayoutStyle"/>', "", seccion)
+    # Sin listas numeradas (la numeración del otro informe no existe aquí).
+    seccion = re.sub(r"<w:numPr>.*?</w:numPr>", "", seccion, flags=re.S)
+    seccion = seccion + "<w:p/>"
+    return renumerar_ids(seccion, 3000)
+
+
+def agregar_seccion_baterias(doc, seccion):
+    """Inserta la sección 4 "Registro de baterías" en su propia página, antes
+    de la rutina de mantención, y la agrega al índice (las secciones
+    siguientes se renumeran y quedan una página más adelante)."""
+    rutina = next(
+        m for m in RE_PARRAFO.finditer(doc) if "Ttulo1" in m.group(0) and "Rutina de Servicio" in textos_de(m.group(0))
+    )
+    titulo = (
+        '<w:p><w:pPr><w:pStyle w:val="Ttulo1"/></w:pPr>'
+        f'<w:bookmarkStart w:id="901" w:name="{MARCADOR_BATERIAS}"/>'
+        f"<w:r><w:t>{TITULO_BATERIAS}</w:t></w:r>"
+        '<w:bookmarkEnd w:id="901"/></w:p>'
+    )
+    salto = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
+    doc = doc[: rutina.start()] + titulo + seccion + salto + doc[rutina.start():]
+
+    lineas = [m for m in RE_PARRAFO.finditer(doc) if "TDC1" in m.group(0) and "PAGEREF" in m.group(0)]
+    evaluacion = next(i for i, m in enumerate(lineas) if "Evaluaci" in textos_de(m.group(0)))
+
+    def cambiar(p, numero=None, nombre=None, pagina=None, marcador=None):
+        textos = [t for t in RE_TEXTO.finditer(p) if t.group(2).strip()]
+        reemplazos = []
+        if numero is not None:
+            reemplazos.append((textos[0], str(numero)))
+        if nombre is not None:
+            reemplazos.append((textos[1], nombre))
+        if pagina is not None:
+            reemplazos.append((textos[-1], str(pagina)))
+        for t, valor in sorted(reemplazos, key=lambda r: r[0].start(), reverse=True):
+            p = p[: t.start(2)] + valor + p[t.end(2):]
+        if marcador:
+            p = re.sub(r"PAGEREF \S+", f"PAGEREF {marcador}", p)
+            p = re.sub(r' w14:(paraId|textId)="[^"]*"', "", p)
+        return p
+
+    def numeros(p):
+        textos = [t.group(2) for t in RE_TEXTO.finditer(p) if t.group(2).strip()]
+        return int(textos[0]), int(textos[-1])
+
+    # De abajo hacia arriba, para no mover las posiciones pendientes.
+    for m in reversed(lineas[evaluacion + 1 :]):
+        numero, pagina = numeros(m.group(0))
+        doc = doc[: m.start()] + cambiar(m.group(0), numero + 1, pagina=pagina + 1) + doc[m.end():]
+    linea_eval = lineas[evaluacion]
+    numero, pagina = numeros(linea_eval.group(0))
+    nueva = cambiar(linea_eval.group(0), numero + 1, TITULO_BATERIAS, pagina + 1, MARCADOR_BATERIAS)
+    return doc[: linea_eval.end()] + nueva + doc[linea_eval.end():]
+
+
 def renumerar_ids(xml, base):
     """Evita choques de id de dibujos con los del informe de Fricke."""
     return re.sub(r'(<(?:wp:docPr|[a-z]+:cNvPr) id=")(\d+)"', lambda m: f'{m.group(1)}{base + int(m.group(2))}"', xml)
@@ -226,8 +406,7 @@ def extraer_portada(zportada):
     la tabla flotante con los datos; luego se fuerza el salto de página."""
     doc = zportada.read("word/document.xml").decode("utf-8")
     cuerpo = doc[doc.find("<w:body>") + len("<w:body>"):]
-    elementos = list(re.finditer(r"<w:p[ >].*?</w:p>|<w:tbl>.*?</w:tbl>", cuerpo, re.S))
-    dibujo, vacio, tabla = (m.group(0) for m in elementos[:3])
+    dibujo, vacio, tabla = elementos_cuerpo(cuerpo)[:3]
 
     # Tabla de datos: el valor de cada fila (2ª celda) pasa a ser un token.
     filas = re.findall(r"<w:tr .*?</w:tr>", tabla, re.S)
@@ -380,6 +559,7 @@ def main():
     DESTINO.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(PORTADA) as zportada:
         portada, imagenes_portada = extraer_portada(zportada)
+        seccion_baterias = extraer_seccion_baterias(zportada)
         encabezado, rels_encabezado, imagenes_encabezado = extraer_encabezado_portada(zportada)
 
     with zipfile.ZipFile(ORIGEN) as zin, zipfile.ZipFile(DESTINO, "w", zipfile.ZIP_DEFLATED) as zout:
@@ -389,6 +569,7 @@ def main():
                 datos = imagen_en_blanco()
             elif item.filename == "word/document.xml":
                 doc = procesar_documento(datos.decode("utf-8"))
+                doc = agregar_seccion_baterias(doc, seccion_baterias)
                 datos = insertar_portada(doc, portada).encode("utf-8")
             elif item.filename == "word/header1.xml":
                 datos = procesar_encabezado(datos.decode("utf-8")).encode("utf-8")

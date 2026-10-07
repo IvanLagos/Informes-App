@@ -1,3 +1,5 @@
+import TablaBaterias from "./TablaBaterias";
+
 function NotaBaterias({ estado, modelo }) {
   if (!estado || !modelo || estado.antiguedad === null) return null;
   if (!estado.vida) {
@@ -29,6 +31,7 @@ export default function PasoFormulario({ secciones, estadoBaterias, datos, onCam
       {secciones.map((seccion) => (
         <div key={seccion.titulo}>
           <h3>{seccion.titulo}</h3>
+          {seccion.componente === "tablaBaterias" && <TablaBaterias datos={datos} onCambiar={onCambiar} />}
           <div className="formulario">
             {seccion.campos.map((campo) => (
               <label key={campo.clave} className={`campo ${campo.tipo === "largo" ? "ancho" : ""}`}>

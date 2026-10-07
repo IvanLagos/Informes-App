@@ -38,6 +38,14 @@ const SECCIONES = [
     ],
   },
   {
+    // Se muestra como la misma tabla de colores del informe (ver
+    // TablaBaterias en el navegador). Modelo, cantidad y año de las baterías
+    // son los mismos campos de "Antecedentes del equipo".
+    titulo: "Registro de baterías",
+    componente: "tablaBaterias",
+    campos: [],
+  },
+  {
     titulo: "Evaluación técnica",
     campos: [
       { clave: "ESTADO_UPS", etiqueta: "Estado de la UPS", tipo: "largo" },
@@ -122,6 +130,16 @@ function valoresPorDefecto() {
     DATA_UPS: "",
     ANIO_BATERIAS: "",
     UBICACION: "",
+    // Medidas estándar del registro de baterías (todas editables). El total
+    // Pass vacío significa "cantidad de baterías − Warning − Fail".
+    BAT_PERFIL: "Sistema UPS",
+    BAT_UBICACION: "Administración",
+    BAT_RES_PASS: "17.0",
+    BAT_RES_WARNING: "22.8",
+    BAT_RES_FAIL: "24.7",
+    BAT_TOTAL_PASS: "",
+    BAT_TOTAL_WARNING: "0",
+    BAT_TOTAL_FAIL: "0",
     ESTADO_UPS: "UPS se encuentra operativa cumpliendo características técnicas de operación.",
     ESTADO_BATERIAS:
       "se realiza medición de estas y todos los valores obtenidos se encuentran dentro del rango normal de operación.",
@@ -217,6 +235,16 @@ function estadoBaterias(d) {
   return `Año ${d.ANIO_BATERIAS}, ${texto}`;
 }
 
+/** Baterías en estado normal: lo que escribió el técnico o, si lo dejó vacío, total − con desviación − degradadas. */
+function totalPass(d) {
+  if (String(d.BAT_TOTAL_PASS || "").trim()) return String(d.BAT_TOTAL_PASS).trim();
+  const total = parseInt(d.CANT_BATERIAS, 10);
+  if (Number.isNaN(total)) return "";
+  const warning = parseInt(d.BAT_TOTAL_WARNING, 10) || 0;
+  const fail = parseInt(d.BAT_TOTAL_FAIL, 10) || 0;
+  return String(Math.max(total - warning - fail, 0));
+}
+
 /** Prepara lo que se reemplaza en la plantilla a partir de los datos del formulario. */
 function prepararDocumento(d) {
   return {
@@ -242,6 +270,14 @@ function prepararDocumento(d) {
       INFO_BATERIAS: infoBaterias(d),
       BYPASS: d.BYPASS,
       SNMP: d.SNMP,
+      BAT_PERFIL: d.BAT_PERFIL,
+      BAT_UBICACION: d.BAT_UBICACION,
+      BAT_RES_PASS: d.BAT_RES_PASS,
+      BAT_RES_WARNING: d.BAT_RES_WARNING,
+      BAT_RES_FAIL: d.BAT_RES_FAIL,
+      BAT_TOTAL_WARNING: d.BAT_TOTAL_WARNING || "0",
+      BAT_TOTAL_FAIL: d.BAT_TOTAL_FAIL || "0",
+      BAT_TOTAL_PASS: totalPass(d),
       ...Object.fromEntries(
         FOTOS.filter((f) => f.tituloPorDefecto).map((f, i) => [
           `FOTO${i + 1}_TITULO`,

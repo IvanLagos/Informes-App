@@ -612,3 +612,96 @@ select:focus {
 .vista-previa-ayuda a {
   color: var(--color-acento);
 }
+
+/* ---------- Tabla de registro de baterías (réplica del informe) ---------- */
+.tabla-baterias {
+  --tb-azul: #3f51b5;
+  border-left: 12px solid var(--tb-azul);
+  padding-left: 4px;
+  overflow-x: auto;
+}
+
+.tabla-baterias table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.tabla-baterias th {
+  background: var(--tb-azul);
+  color: white;
+  font-weight: 400;
+  text-align: left;
+  padding: 6px 8px;
+  border: 1px solid #d0d5dd;
+}
+
+.tabla-baterias td {
+  border: 1px solid #d0d5dd;
+  padding: 4px 8px;
+  background: var(--color-superficie);
+}
+
+.tabla-baterias input {
+  width: 100%;
+  font: inherit;
+  padding: 6px 8px;
+  border: 1.5px solid var(--color-borde);
+  border-radius: 6px;
+  background: #fbfcfe;
+}
+
+.tabla-baterias input:focus {
+  outline: none;
+  border-color: var(--color-acento);
+  box-shadow: 0 0 0 3px rgba(0, 102, 153, 0.15);
+}
+
+.tb-perfil .tb-etiqueta {
+  width: 30%;
+  white-space: nowrap;
+}
+
+.tb-resultados .tb-juicio {
+  width: 28%;
+}
+
+.tabla-baterias td.tb-pass {
+  background: #00b050;
+}
+
+.tabla-baterias td.tb-warning {
+  background: #ffff00;
+}
+
+.tabla-baterias td.tb-fail {
+  background: #ff0000;
+}
+
+.tb-medida {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.tb-medida input {
+  max-width: 90px;
+  text-align: right;
+}
+
+.tb-resultados td:nth-child(4) input {
+  max-width: 80px;
+  text-align: center;
+}
+
+.tb-estado {
+  text-align: center;
+}
+
+.tb-ayuda {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
