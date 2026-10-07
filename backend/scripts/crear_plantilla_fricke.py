@@ -111,7 +111,46 @@ def procesar_documento(doc):
     fin = next(t for t in tablas if 'r:embed="rId11"' in t.group(0)).end()
     dibujo_base = re.search(r'<w:drawing>(?:(?!<w:drawing>).)*?r:embed="rId8".*?</w:drawing>', doc, re.S).group(0)
     doc = doc[:inicio] + tabla_fotos(dibujo_base) + doc[fin:]
-    return doc
+    return agregar_titulo_hoja(doc)
+
+
+TITULO_HOJA = "Registro de hoja de trabajo"
+MARCADOR_HOJA = "_TocHojaTrabajo"
+
+
+def agregar_titulo_hoja(doc):
+    """La página de la hoja de trabajo solo tenía una leyenda centrada: pasa a
+    ser la sección 6, con el mismo estilo de título que las demás y su línea
+    en el índice."""
+    leyenda = next(
+        m for m in RE_PARRAFO.finditer(doc) if "Registro de Hoja de Trabajo de Asistencia" in m.group(0)
+    )
+    titulo = (
+        '<w:p><w:pPr><w:pStyle w:val="Ttulo1"/></w:pPr>'
+        f'<w:bookmarkStart w:id="900" w:name="{MARCADOR_HOJA}"/>'
+        f"<w:r><w:t>{TITULO_HOJA}</w:t></w:r>"
+        '<w:bookmarkEnd w:id="900"/></w:p>'
+    )
+    doc = doc[: leyenda.start()] + titulo + doc[leyenda.end():]
+
+    # Línea del índice: copia de la del registro fotográfico (sección 5), con
+    # la página siguiente (la hoja de trabajo va en la página después de las fotos).
+    linea_fotos = next(m for m in RE_PARRAFO.finditer(doc) if "TDC1" in m.group(0) and "Registro fotogr" in m.group(0))
+    p = linea_fotos.group(0)
+    marcador_fotos = re.search(r"PAGEREF (\S+)", p).group(1)
+    textos = [t for t in RE_TEXTO.finditer(p) if t.group(2).strip()]
+    numero, nombre, pagina = textos[0], textos[1], textos[-1]
+    reemplazos = [
+        (numero, "6"),
+        (nombre, TITULO_HOJA),
+        (pagina, str(int(pagina.group(2)) + 1)),
+    ]
+    nueva = p
+    for t, valor in sorted(reemplazos, key=lambda r: r[0].start(), reverse=True):
+        nueva = nueva[: t.start(2)] + valor + nueva[t.end(2):]
+    nueva = nueva.replace(marcador_fotos, MARCADOR_HOJA)
+    nueva = re.sub(r' w14:(paraId|textId)="[^"]*"', "", nueva)
+    return doc[: linea_fotos.end()] + nueva + doc[linea_fotos.end():]
 
 
 def tabla_fotos(dibujo_base):
