@@ -772,3 +772,32 @@ select:focus {
   border-radius: 12px;
   color: var(--color-texto-suave);
 }
+
+/* ---------- Botón flotante "volver arriba" ---------- */
+.boton-arriba {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 50;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-marca);
+  color: white;
+  font-size: 1.4rem;
+  line-height: 1;
+  box-shadow: var(--sombra-card-hover);
+}
+
+.boton-arriba:hover:not(:disabled) {
+  background: var(--color-marca-oscuro);
+}
+
+@media (max-width: 600px) {
+  .boton-arriba {
+    right: 16px;
+    bottom: 16px;
+  }
+}

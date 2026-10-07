@@ -6,6 +6,7 @@ import PasoFormulario from "./components/PasoFormulario";
 import PasoFotos, { tituloFinal } from "./components/PasoFotos";
 import { estadoBaterias, sincronizarRecomendacion } from "./baterias";
 import PasoGenerar from "./components/PasoGenerar";
+import BotonArriba from "./components/BotonArriba";
 
 const NOMBRES_PASOS = ["Cliente y tipo", "Hoja de trabajo", "Datos", "Fotos", "Generar"];
 
@@ -39,6 +40,13 @@ export default function App() {
       })
       .catch((e) => setError(`${e.message} ¿Está abierto el backend?`));
   }, []);
+
+  // Al cambiar de paso (Siguiente o Volver) la página parte desde arriba.
+  // Inmediato y no suave: el contenido cambia de alto en ese momento y el
+  // navegador corta un desplazamiento suave a medio camino.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [paso]);
 
   function elegirCliente(id) {
     setClienteId(id);
@@ -263,6 +271,8 @@ export default function App() {
           onVolver={() => setPaso(4)}
         />
       )}
+
+      <BotonArriba />
     </div>
   );
 }
