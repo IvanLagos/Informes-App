@@ -49,11 +49,7 @@ const SECCIONES = [
     titulo: "Evaluación técnica",
     campos: [
       { clave: "ESTADO_UPS", etiqueta: "Estado de la UPS", tipo: "largo" },
-      {
-        clave: "ESTADO_BATERIAS",
-        etiqueta: "Estado de las baterías (en el informe se antepone «Año XXXX,»)",
-        tipo: "largo",
-      },
+      { clave: "ESTADO_BATERIAS", etiqueta: "Estado de las baterías", tipo: "largo" },
       { clave: "BYPASS", etiqueta: "El tablero posee bypass de mantenimiento", tipo: "opciones", opciones: SI_NO },
       { clave: "SNMP", etiqueta: "UPS tiene tarjeta SNMP", tipo: "opciones", opciones: SI_NO },
       { clave: "OBSERVACIONES", etiqueta: "Observaciones generales (un párrafo por línea)", tipo: "largo" },
@@ -142,7 +138,7 @@ function valoresPorDefecto() {
     BAT_TOTAL_FAIL: "0",
     ESTADO_UPS: "UPS se encuentra operativa cumpliendo características técnicas de operación.",
     ESTADO_BATERIAS:
-      "se realiza medición de estas y todos los valores obtenidos se encuentran dentro del rango normal de operación.",
+      "Se realiza medición de estas y todos los valores obtenidos se encuentran dentro del rango normal de operación.",
     BYPASS: "Si",
     SNMP: "Si",
     OBSERVACIONES: [
@@ -229,12 +225,6 @@ function infoBaterias(d) {
   return `Información de Baterías / ${partes.join(", ")}`;
 }
 
-function estadoBaterias(d) {
-  const texto = String(d.ESTADO_BATERIAS || "").trim();
-  if (!d.ANIO_BATERIAS) return texto.charAt(0).toUpperCase() + texto.slice(1);
-  return `Año ${d.ANIO_BATERIAS}, ${texto}`;
-}
-
 /** Baterías en estado normal: lo que escribió el técnico o, si lo dejó vacío, total − con desviación − degradadas. */
 function totalPass(d) {
   if (String(d.BAT_TOTAL_PASS || "").trim()) return String(d.BAT_TOTAL_PASS).trim();
@@ -266,7 +256,7 @@ function prepararDocumento(d) {
       ANIO_BATERIAS: d.ANIO_BATERIAS,
       UBICACION: d.UBICACION,
       ESTADO_UPS: d.ESTADO_UPS,
-      ESTADO_BATERIAS: estadoBaterias(d),
+      ESTADO_BATERIAS: d.ESTADO_BATERIAS,
       INFO_BATERIAS: infoBaterias(d),
       BYPASS: d.BYPASS,
       SNMP: d.SNMP,
