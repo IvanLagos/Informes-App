@@ -1,5 +1,17 @@
 import TablaBaterias from "./TablaBaterias";
 
+/**
+ * Fecha mientras se escribe: solo números y las "/" se agregan solas
+ * ("05102026" -> "05/10/2026"). La barra aparece al escribir el número que
+ * sigue, así borrar con la tecla de retroceso no se traba en ella.
+ */
+function formatearFecha(valor) {
+  const d = String(valor).replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
+
 function NotaBaterias({ estado, modelo }) {
   if (!estado || !modelo || estado.antiguedad === null) return null;
   if (!estado.vida) {
@@ -60,6 +72,16 @@ export default function PasoFormulario({ secciones, estadoBaterias, datos, onCam
                       </option>
                     ))}
                   </select>
+                )}
+                {campo.tipo === "fecha" && (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="DD/MM/AAAA"
+                    maxLength={10}
+                    value={datos[campo.clave] || ""}
+                    onChange={(e) => onCambiar(campo.clave, formatearFecha(e.target.value))}
+                  />
                 )}
                 {!campo.tipo && (
                   <input type="text" value={datos[campo.clave] || ""} onChange={(e) => onCambiar(campo.clave, e.target.value)} />

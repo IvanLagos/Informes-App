@@ -23,8 +23,9 @@ const SECCIONES = [
       { clave: "EMPRESA", etiqueta: "Empresa", obligatorio: true },
       { clave: "ATENCION", etiqueta: "Atención", obligatorio: true },
       { clave: "ASUNTO", etiqueta: "Asunto", obligatorio: true },
-      { clave: "FECHA_ASUNTO", etiqueta: "Fecha del servicio — portada (DD-MM-AAAA)", obligatorio: true },
-      { clave: "FECHA_INFORME", etiqueta: "Fecha del informe — encabezado (DD/MM/AAAA)", obligatorio: true },
+      // tipo "fecha": el formulario agrega las "/" solo mientras se escriben los números.
+      { clave: "FECHA_ASUNTO", etiqueta: "Fecha del servicio — portada (DD/MM/AAAA)", tipo: "fecha", obligatorio: true },
+      { clave: "FECHA_INFORME", etiqueta: "Fecha del informe — encabezado (DD/MM/AAAA)", tipo: "fecha", obligatorio: true },
     ],
   },
   {
@@ -188,7 +189,7 @@ function normalizarPotencia(valor) {
     .replace(/^(\d+(?:[.,]\d+)?)\s*kva$/i, "$1 kVA");
 }
 
-/** "5/10/26", "05.10.2026", "05-10-26"… -> "05-10-2026" (vacío si no es una fecha válida). */
+/** "5/10/26", "05.10.2026", "05-10-26"… -> "05/10/2026" (vacío si no es una fecha válida). */
 function normalizarFecha(valor) {
   const m = /^\s*(\d{1,2})\s*[-/.·]\s*(\d{1,2})\s*[-/.·]\s*(\d{2}|\d{4})\s*$/.exec(String(valor || ""));
   if (!m) return "";
@@ -196,7 +197,7 @@ function normalizarFecha(valor) {
   const mes = parseInt(m[2], 10);
   if (dia < 1 || dia > 31 || mes < 1 || mes > 12) return "";
   const anio = m[3].length === 2 ? `20${m[3]}` : m[3];
-  return `${String(dia).padStart(2, "0")}-${String(mes).padStart(2, "0")}-${anio}`;
+  return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${anio}`;
 }
 
 function contarVoltajes(lista) {
@@ -228,9 +229,9 @@ function interpretarLectura(leido) {
 
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 
-/** "05-10-2026" -> "5 octubre de 2026" (formato del informe original). */
+/** "05/10/2026" -> "5 octubre de 2026" (formato del informe original). */
 function fechaEnTexto(fecha) {
-  const m = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(String(fecha || "").trim());
+  const m = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/.exec(String(fecha || "").trim());
   if (!m) return String(fecha || "");
   const mes = MESES[parseInt(m[2], 10) - 1];
   return mes ? `${parseInt(m[1], 10)} ${mes} de ${m[3]}` : String(fecha);
@@ -262,7 +263,7 @@ function prepararDocumento(d) {
       ATENCION: d.ATENCION,
       ASUNTO: d.ASUNTO,
       FECHA_ASUNTO_TEXTO: fechaEnTexto(d.FECHA_ASUNTO),
-      FECHA_PORTADA: (normalizarFecha(d.FECHA_ASUNTO) || String(d.FECHA_ASUNTO || "").trim()).replace(/-/g, "/"),
+      FECHA_PORTADA: normalizarFecha(d.FECHA_ASUNTO) || String(d.FECHA_ASUNTO || "").trim(),
       FECHA_INFORME: d.FECHA_INFORME,
       MODELO_UPS: d.MODELO_UPS,
       NUM_SERIE: d.NUM_SERIE,

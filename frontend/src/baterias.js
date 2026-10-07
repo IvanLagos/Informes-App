@@ -21,7 +21,7 @@ export function vidaUtilDe(modelo, tabla) {
   return mejor;
 }
 
-/** Antigüedad = año del servicio (FECHA_ASUNTO DD-MM-AAAA, o el actual) − año de las baterías. */
+/** Antigüedad = año del servicio (FECHA_ASUNTO DD/MM/AAAA, o el actual) − año de las baterías. */
 export function antiguedadBaterias(anioBaterias, fechaServicio) {
   const anioBat = parseInt(String(anioBaterias || "").trim(), 10);
   if (Number.isNaN(anioBat)) return null;
