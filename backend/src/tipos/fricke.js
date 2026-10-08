@@ -165,7 +165,7 @@ texto adicional, sin backticks) con estas claves exactas:
 
 {
   "EMPRESA": "campo EMPRESA, tal como está escrito",
-  "FECHA_ASUNTO": "fecha del servicio en formato DD-MM-AAAA (día primero; si el año viene con 2 dígitos, antepone 20). Tómala del campo FECHA PEDIDO; si está vacío, de FECHA COMPROMISO; si ambos están vacíos, de otra fecha del servicio escrita a mano en la hoja",
+  "FECHA_ASUNTO": "SOLO el campo FECHA COMPROMISO, en formato DD-MM-AAAA (día primero; si el año viene con 2 dígitos, antepone 20). NUNCA uses FECHA PEDIDO ni otra fecha de la hoja: si FECHA COMPROMISO está vacío o no se lee, cadena vacía",
   "MODELO_UPS": "campo MODELO de la sección 3",
   "NUM_SERIE": "campo C. PLACA",
   "POTENCIA": "campo POT, ej. '20 kVA'",
