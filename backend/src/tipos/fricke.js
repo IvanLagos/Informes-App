@@ -165,7 +165,7 @@ texto adicional, sin backticks) con estas claves exactas:
 
 {
   "EMPRESA": "campo EMPRESA, tal como está escrito",
-  "FECHA_ASUNTO": "campo FECHA PEDIDO en formato DD-MM-AAAA (si el año viene con 2 dígitos, antepone 20)",
+  "FECHA_ASUNTO": "fecha del servicio en formato DD-MM-AAAA (día primero; si el año viene con 2 dígitos, antepone 20). Tómala del campo FECHA PEDIDO; si está vacío, de FECHA COMPROMISO; si ambos están vacíos, de otra fecha del servicio escrita a mano en la hoja",
   "MODELO_UPS": "campo MODELO de la sección 3",
   "NUM_SERIE": "campo C. PLACA",
   "POTENCIA": "campo POT, ej. '20 kVA'",
@@ -189,14 +189,28 @@ function normalizarPotencia(valor) {
     .replace(/^(\d+(?:[.,]\d+)?)\s*kva$/i, "$1 kVA");
 }
 
-/** "5/10/26", "05.10.2026", "05-10-26"… -> "05/10/2026" (vacío si no es una fecha válida). */
+/**
+ * Fecha a "DD/MM/AAAA" desde las formas en que viene escrita o leída:
+ * "5/10/26", "05.10.2026", "05-10-26", "05 10 2026", "05102026", "051026",
+ * "2026-10-05" (año primero). Vacío si no es una fecha válida.
+ */
 function normalizarFecha(valor) {
-  const m = /^\s*(\d{1,2})\s*[-/.·]\s*(\d{1,2})\s*[-/.·]\s*(\d{2}|\d{4})\s*$/.exec(String(valor || ""));
-  if (!m) return "";
-  const dia = parseInt(m[1], 10);
-  const mes = parseInt(m[2], 10);
+  const texto = String(valor || "").trim();
+  let dia, mes, anio;
+  let m;
+  if ((m = /^(\d{4})\s*[-/.·]\s*(\d{1,2})\s*[-/.·]\s*(\d{1,2})$/.exec(texto))) {
+    [, anio, mes, dia] = m;
+  } else if ((m = /^(\d{1,2})\s*[-/.·\s]\s*(\d{1,2})\s*[-/.·\s]\s*(\d{2}|\d{4})$/.exec(texto))) {
+    [, dia, mes, anio] = m;
+  } else if ((m = /^(\d{2})(\d{2})(\d{4}|\d{2})$/.exec(texto.replace(/\D/g, "")))) {
+    [, dia, mes, anio] = m;
+  } else {
+    return "";
+  }
+  dia = parseInt(dia, 10);
+  mes = parseInt(mes, 10);
   if (dia < 1 || dia > 31 || mes < 1 || mes > 12) return "";
-  const anio = m[3].length === 2 ? `20${m[3]}` : m[3];
+  if (String(anio).length === 2) anio = `20${anio}`;
   return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${anio}`;
 }
 
@@ -208,6 +222,10 @@ function contarVoltajes(lista) {
 function interpretarLectura(leido) {
   const datos = valoresPorDefecto();
   datos.FECHA_ASUNTO = normalizarFecha(leido.FECHA_ASUNTO);
+  if (leido.FECHA_ASUNTO && !datos.FECHA_ASUNTO) {
+    // Queda en blanco para que el técnico la escriba; el registro ayuda a ajustar la lectura.
+    console.warn(`Fecha del servicio no reconocida: ${JSON.stringify(leido.FECHA_ASUNTO)}`);
+  }
   for (const clave of ["EMPRESA", "MODELO_UPS", "NUM_SERIE", "CANT_BATERIAS", "MODELO_BATERIAS", "ANIO_BATERIAS", "DATA_UPS"]) {
     if (leido[clave]) datos[clave] = String(leido[clave]).trim();
   }
