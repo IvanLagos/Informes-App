@@ -95,10 +95,11 @@ clave con **Cambiar mi clave**.
   sus sesiones abiertas de inmediato.
 - 8 intentos fallidos de ingreso desde la misma conexión bloquean el ingreso
   por 15 minutos.
-- La primera cuenta (administrador) se crea al arrancar con `ADMIN_EMAIL` y
-  `ADMIN_PASSWORD`, solo si todavía no existe ninguna. En local esos datos
-  están en `backend/.env` y las cuentas en `backend/datos/` (no se suben a
-  GitHub).
+- La primera cuenta (administrador, `ADMIN_EMAIL`) se crea al arrancar con la
+  clave inicial `12345678` (o `ADMIN_PASSWORD` si se define), solo si todavía
+  no existe ninguna; hay que cambiarla en el primer ingreso. Lo mismo para las
+  claves que asigna un administrador: son temporales. En local las cuentas
+  están en `backend/datos/` (no se suben a GitHub).
 
 Cada vez que se sube un cambio a `main`, Render vuelve a publicar la app.
 En el plan gratuito el servicio se duerme sin uso y la primera visita

@@ -21,10 +21,10 @@ services:
       # Firma de las sesiones: Render la genera sola una vez.
       - key: JWT_SECRET
         generateValue: true
-      # Administrador inicial: se crea solo si todavía no hay ninguna cuenta.
+      # Administrador inicial: se crea solo si todavía no hay ninguna cuenta,
+      # con la clave inicial del backend (o ADMIN_PASSWORD si se define), y
+      # la app obliga a cambiarla en el primer ingreso.
       - key: ADMIN_EMAIL
         value: ilagos@fernandezfica.cl
       - key: ADMIN_NOMBRE
         value: Iván Lagos
-      - key: ADMIN_PASSWORD
-        sync: false

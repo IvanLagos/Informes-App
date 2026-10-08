@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { alExpirar, cerrarSesion, obtenerSesion, obtenerToken } from "./api";
 import App from "./App";
 import Ingreso from "./components/Ingreso";
+import CambiarClave from "./components/CambiarClave";
 
 /**
  * Decide qué se muestra según la sesión: la pantalla de ingreso o la app.
@@ -39,14 +40,26 @@ export default function Raiz() {
     );
   }
 
+  const salir = () => {
+    cerrarSesion();
+    setUsuario(null);
+  };
+
+  // Clave temporal (la inicial o una asignada por un administrador): primero
+  // hay que elegir una propia; el servidor no deja hacer nada más.
+  if (usuario.debeCambiarClave) {
+    return (
+      <div className="app">
+        <CambiarClave obligatorio onListo={setUsuario} onVolver={salir} />
+      </div>
+    );
+  }
+
   return (
     <App
       usuario={usuario}
       onActualizarUsuario={setUsuario}
-      onCerrarSesion={() => {
-        cerrarSesion();
-        setUsuario(null);
-      }}
+      onCerrarSesion={salir}
     />
   );
 }

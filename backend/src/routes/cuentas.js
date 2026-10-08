@@ -2,7 +2,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit").default;
 
 const usuarios = require("../lib/usuarios");
-const { crearToken, requiereSesion, requiereAdministrador } = require("../lib/sesion");
+const { crearToken, requiereSesion, sesionValida, requiereAdministrador } = require("../lib/sesion");
 
 // Frena a quien intenta adivinar claves: 8 intentos fallidos por IP cada 15 minutos.
 const limiteIngreso = rateLimit({
@@ -34,19 +34,16 @@ sesion.post("/login", limiteIngreso, (req, res) => {
   res.json({ token: crearToken(usuario), usuario: usuarios.publico(usuario) });
 });
 
-sesion.get("/yo", requiereSesion, (req, res) => {
+sesion.get("/yo", sesionValida, (req, res) => {
   res.json({ usuario: usuarios.publico(req.usuario) });
 });
 
 sesion.post(
   "/cambiar-clave",
-  requiereSesion,
+  sesionValida,
   conErrores((req, res) => {
     const { claveActual, claveNueva } = req.body || {};
-    if (!usuarios.verificarClaveActual(req.usuario.id, claveActual)) {
-      return res.status(400).json({ error: "La clave actual no es correcta." });
-    }
-    const usuario = usuarios.actualizar(req.usuario.id, { clave: claveNueva });
+    const usuario = usuarios.cambiarClavePropia(req.usuario.id, claveActual, claveNueva);
     // La clave nueva invalida el token anterior: se entrega uno nuevo.
     res.json({ token: crearToken(usuarios.buscarPorId(usuario.id)), usuario });
   })
@@ -71,7 +68,8 @@ admin.patch(
   "/usuarios/:id",
   conErrores((req, res) => {
     const { nombre, perfil, activo, clave } = req.body || {};
-    res.json({ usuario: usuarios.actualizar(req.params.id, { nombre, perfil, activo, clave }) });
+    // La clave que asigna un administrador es temporal: se cambia al entrar.
+    res.json({ usuario: usuarios.actualizar(req.params.id, { nombre, perfil, activo, clave, debeCambiarClave: true }) });
   })
 );
 

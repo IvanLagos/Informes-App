@@ -16,8 +16,21 @@ function crearToken(usuario) {
   return jwt.sign({ sub: usuario.id, v: usuario.versionSesion || 0 }, SECRETO, { expiresIn: DURACION });
 }
 
-/** Exige sesión válida; deja la cuenta en req.usuario. */
+/**
+ * Exige sesión válida; deja la cuenta en req.usuario. Con una clave temporal
+ * solo se puede consultar la sesión y cambiar la clave.
+ */
 function requiereSesion(req, res, next) {
+  sesionValida(req, res, () => {
+    if (req.usuario.debeCambiarClave) {
+      return res.status(403).json({ error: "Debes cambiar tu clave antes de continuar.", debeCambiarClave: true });
+    }
+    next();
+  });
+}
+
+/** Igual que requiereSesion, pero permite el acceso con clave temporal. */
+function sesionValida(req, res, next) {
   const [tipo, token] = (req.headers.authorization || "").split(" ");
   if (tipo !== "Bearer" || !token) return res.status(401).json({ error: "Debes iniciar sesión." });
   try {
@@ -40,4 +53,4 @@ function requiereAdministrador(req, res, next) {
   next();
 }
 
-module.exports = { crearToken, requiereSesion, requiereAdministrador };
+module.exports = { crearToken, requiereSesion, sesionValida, requiereAdministrador };

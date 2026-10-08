@@ -5,7 +5,11 @@
  *
  * Perfiles: "tecnico" (genera informes) y "administrador" (además administra
  * las cuentas). Si no hay ninguna cuenta, se crea el administrador inicial
- * con ADMIN_EMAIL / ADMIN_PASSWORD.
+ * con ADMIN_EMAIL / ADMIN_PASSWORD (o la clave inicial por defecto).
+ *
+ * Las claves que no eligió la propia persona (la inicial y las que asigna un
+ * administrador) son temporales: hay que cambiarlas al entrar
+ * (debeCambiarClave) antes de poder usar la app.
  */
 const crypto = require("crypto");
 const fs = require("fs");
@@ -22,6 +26,10 @@ const PERFILES = [
   { id: "administrador", etiqueta: "Administrador" },
 ];
 const LARGO_MINIMO_CLAVE = 8;
+// Clave del administrador inicial si no se define ADMIN_PASSWORD. Es pública
+// (el repositorio es público), por eso se exige cambiarla al primer ingreso.
+const CLAVE_INICIAL = "12345678";
+const CORREO_ADMIN_INICIAL = "ilagos@fernandezfica.cl";
 
 let cache = null;
 
@@ -67,14 +75,10 @@ function validarPerfil(perfil) {
 function inicializar() {
   const usuarios = leer();
   if (usuarios.length > 0) return;
-  const correo = normalizarCorreo(process.env.ADMIN_EMAIL);
-  const clave = process.env.ADMIN_PASSWORD;
-  if (!correo || !clave) {
-    console.warn("No hay cuentas: define ADMIN_EMAIL y ADMIN_PASSWORD para crear el administrador inicial.");
-    return;
-  }
+  const correo = normalizarCorreo(process.env.ADMIN_EMAIL || CORREO_ADMIN_INICIAL);
+  const clave = process.env.ADMIN_PASSWORD || CLAVE_INICIAL;
   crear({ nombre: process.env.ADMIN_NOMBRE || "Administrador", correo, perfil: "administrador", clave });
-  console.log(`Cuenta de administrador inicial creada: ${correo}`);
+  console.log(`Cuenta de administrador inicial creada: ${correo} (debe cambiar la clave al entrar)`);
 }
 
 function listar() {
@@ -101,6 +105,7 @@ function crear({ nombre, correo, perfil, clave }) {
     perfil,
     activo: true,
     hash: bcrypt.hashSync(clave, 12),
+    debeCambiarClave: true,
     creado: new Date().toISOString(),
     ultimoIngreso: null,
   };
@@ -124,7 +129,10 @@ function actualizar(id, cambios) {
   if (cambios.activo !== undefined) nuevo.activo = Boolean(cambios.activo);
   if (cambios.clave) {
     validarClave(cambios.clave);
+    if (cambios.clave === CLAVE_INICIAL) throw new Error("Esa clave es la inicial: elige otra.");
     nuevo.hash = bcrypt.hashSync(cambios.clave, 12);
+    // La elige la propia persona (false) o se la asigna un administrador (true).
+    nuevo.debeCambiarClave = Boolean(cambios.debeCambiarClave);
     // Cambiar la clave invalida las sesiones abiertas con la clave anterior.
     nuevo.versionSesion = (actual.versionSesion || 0) + 1;
   }
@@ -165,6 +173,13 @@ function verificarClaveActual(id, clave) {
   return Boolean(usuario && bcrypt.compareSync(String(clave || ""), usuario.hash));
 }
 
+/** Cambio de clave hecho por la propia persona: deja de ser temporal. */
+function cambiarClavePropia(id, claveActual, claveNueva) {
+  if (!verificarClaveActual(id, claveActual)) throw new Error("La clave actual no es correcta.");
+  if (claveActual === claveNueva) throw new Error("La clave nueva debe ser distinta de la actual.");
+  return actualizar(id, { clave: claveNueva, debeCambiarClave: false });
+}
+
 module.exports = {
   PERFILES,
   LARGO_MINIMO_CLAVE,
@@ -175,6 +190,6 @@ module.exports = {
   actualizar,
   eliminar,
   verificarCredenciales,
-  verificarClaveActual,
+  cambiarClavePropia,
   publico,
 };

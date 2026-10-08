@@ -68,7 +68,10 @@ function FilaCuenta({ cuenta, perfiles, esYo, largoMinimo, onCambio, onError }) 
           {cuenta.activo ? "Activa" : "Desactivada"}
         </span>
       </td>
-      <td className="cuenta-fecha">{fechaHora(cuenta.ultimoIngreso)}</td>
+      <td className="cuenta-fecha">
+        {fechaHora(cuenta.ultimoIngreso)}
+        {cuenta.debeCambiarClave && <div>Con clave temporal</div>}
+      </td>
       <td className="cuenta-acciones">
         {claveNueva === null ? (
           <>
@@ -137,7 +140,8 @@ function FilaCuenta({ cuenta, perfiles, esYo, largoMinimo, onCambio, onError }) 
         )}
         {claveAsignada && (
           <div className="aviso-ok aviso-clave">
-            Clave nueva: <code>{claveAsignada}</code>. Entrégasela a {cuenta.nombre}; no se volverá a mostrar.{" "}
+            Clave temporal: <code>{claveAsignada}</code>. Entrégasela a {cuenta.nombre}; no se volverá a mostrar y al
+            entrar deberá elegir una propia.{" "}
             <button type="button" className="enlace" onClick={() => setClaveAsignada("")}>
               Ocultar
             </button>
@@ -230,7 +234,7 @@ export default function Cuentas({ usuario, onVolver }) {
           </select>
         </label>
         <label className="campo">
-          <span>Clave inicial (mínimo {largoMinimo} caracteres)</span>
+          <span>Clave temporal (mínimo {largoMinimo} caracteres)</span>
           <div className="campo-con-boton">
             <input
               type="text"
@@ -258,8 +262,8 @@ export default function Cuentas({ usuario, onVolver }) {
       {creada && (
         <div className="aviso-ok">
           Cuenta creada para <strong>{creada.nombre}</strong>. Entrégale estos datos (la clave no se volverá a mostrar):
-          correo <code>{creada.correo}</code>, clave <code>{creada.clave}</code>. Puede cambiarla después en «Cambiar mi
-          clave».{" "}
+          correo <code>{creada.correo}</code>, clave temporal <code>{creada.clave}</code>. Al entrar por primera vez
+          deberá elegir su propia clave.{" "}
           <button type="button" className="enlace" onClick={() => setCreada(null)}>
             Ocultar
           </button>

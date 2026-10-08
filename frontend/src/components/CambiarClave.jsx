@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { cambiarMiClave } from "../api";
 
-export default function CambiarClave({ onListo, onVolver }) {
+/** obligatorio: la clave actual es temporal y no se puede seguir sin cambiarla. */
+export default function CambiarClave({ onListo, onVolver, obligatorio = false }) {
   const [actual, setActual] = useState("");
   const [nueva, setNueva] = useState("");
   const [repetida, setRepetida] = useState("");
@@ -31,12 +32,17 @@ export default function CambiarClave({ onListo, onVolver }) {
 
   return (
     <section className="paso">
-      <h2>Cambiar mi clave</h2>
+      <h2>{obligatorio ? "Elige tu clave" : "Cambiar mi clave"}</h2>
+      {obligatorio && (
+        <div className="aviso-info">
+          Estás usando una clave temporal. Antes de continuar, elige una clave propia que solo tú conozcas.
+        </div>
+      )}
       {hecho && <div className="aviso-ok">Listo: tu clave quedó cambiada.</div>}
       {error && <div className="error">{error}</div>}
       <form className="formulario formulario--angosto" onSubmit={enviar}>
         <label className="campo ancho">
-          <span>Clave actual</span>
+          <span>{obligatorio ? "Clave temporal (con la que entraste)" : "Clave actual"}</span>
           <input type="password" autoComplete="current-password" value={actual} onChange={(e) => setActual(e.target.value)} required />
         </label>
         <label className="campo">
@@ -50,7 +56,7 @@ export default function CambiarClave({ onListo, onVolver }) {
         {noCoinciden && <p className="texto-error ancho">Las claves nuevas no coinciden.</p>}
         <div className="acciones ancho">
           <button type="button" onClick={onVolver}>
-            Volver a los informes
+            {obligatorio ? "Cerrar sesión" : "Volver a los informes"}
           </button>
           <button type="submit" className="principal" disabled={cargando || !actual || nueva.length < 8 || nueva !== repetida}>
             {cargando ? "Guardando…" : "Cambiar clave"}
