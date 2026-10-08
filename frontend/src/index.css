@@ -808,6 +808,29 @@ select:focus {
   background: var(--color-error-fondo);
 }
 
+/* Fotos y títulos pendientes en el paso de fotos */
+.recortar-foto--falta {
+  border-color: var(--color-error);
+  background: var(--color-error-fondo);
+}
+
+.recortar-foto--falta:hover {
+  border-color: var(--color-error);
+}
+
+.recortar-falta {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+select.foto-titulo--falta,
+input.foto-titulo--falta {
+  border-color: var(--color-error);
+  background: var(--color-error-fondo);
+}
+
 /* Aviso de campos pendientes: separado del último cuadro de texto */
 .aviso-faltantes {
   margin-top: 28px;

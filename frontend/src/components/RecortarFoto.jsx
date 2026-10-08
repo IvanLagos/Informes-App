@@ -66,7 +66,7 @@ function VistaRotada({ img, angulo }) {
  * (ancho/alto) que el usuario puede mover y hacer zoom antes de confirmar.
  * El resultado final ya viene recortado a esa proporción exacta.
  */
-export default function RecortarFoto({ label, aspecto, onListo, inicialListo = false, notaListo = "" }) {
+export default function RecortarFoto({ label, aspecto, onListo, inicialListo = false, notaListo = "", falta = false }) {
   const [etapa, setEtapa] = useState(inicialListo ? ETAPAS.LISTO : ETAPAS.SELECCION);
   const [imgOriginal, setImgOriginal] = useState(null);
   const [angulo, setAngulo] = useState(0);
@@ -126,12 +126,17 @@ export default function RecortarFoto({ label, aspecto, onListo, inicialListo = f
   }
 
   const expandido = etapa === ETAPAS.ROTAR || etapa === ETAPAS.RECORTAR;
+  // En rojo solo mientras espera la foto (al girar o recortar se ve el editor normal).
+  const marcarFalta = falta && etapa === ETAPAS.SELECCION;
 
   return (
-    <div className={`recortar-foto${expandido ? " recortar-foto--expandido" : ""}`}>
+    <div
+      className={`recortar-foto${expandido ? " recortar-foto--expandido" : ""}${marcarFalta ? " recortar-foto--falta" : ""}`}
+    >
       <label>{label}</label>
 
       {etapa === ETAPAS.SELECCION && <input type="file" accept="image/*" onChange={manejarArchivo} />}
+      {marcarFalta && <p className="recortar-falta">Falta subir esta foto.</p>}
 
       {etapa === ETAPAS.ROTAR && (
         <div className="rotar-preview">

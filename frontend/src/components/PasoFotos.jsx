@@ -16,8 +16,13 @@ export function tituloFinal(titulo) {
 export default function PasoFotos({ fotosTipo, fotoHoja, titulosFoto, fotos, titulos, onFoto, onTitulo, onSiguiente, onVolver }) {
   const fotosTrabajo = fotosTipo.filter((f) => f.tituloPorDefecto);
   const otrasFotos = fotosTipo.filter((f) => !f.tituloPorDefecto);
-  const listo =
-    fotosTipo.every((f) => fotos[f.clave]) && fotosTrabajo.every((f) => tituloFinal(titulos[f.clave]));
+  // Todo es obligatorio: lo que falta queda en rojo y no se puede avanzar.
+  const sinTitulo = (f) => !tituloFinal(titulos[f.clave]);
+  const faltantes = [
+    ...fotosTipo.filter((f) => !fotos[f.clave]).map((f) => `foto «${f.etiqueta}»`),
+    ...fotosTrabajo.filter(sinTitulo).map((f) => `título de «${f.etiqueta}»`),
+  ];
+  const listo = faltantes.length === 0;
 
   return (
     <section className="paso">
@@ -34,8 +39,10 @@ export default function PasoFotos({ fotosTipo, fotoHoja, titulosFoto, fotos, tit
                 aspecto={f.anchoCm / f.altoCm}
                 onListo={(blob) => onFoto(f.clave, blob)}
                 inicialListo={Boolean(fotos[f.clave])}
+                falta={!fotos[f.clave]}
               />
               <select
+                className={sinTitulo(f) ? "foto-titulo--falta" : ""}
                 value={titulo.seleccion}
                 onChange={(e) => onTitulo(f.clave, { seleccion: e.target.value, libre: "" })}
               >
@@ -49,6 +56,7 @@ export default function PasoFotos({ fotosTipo, fotoHoja, titulosFoto, fotos, tit
               {titulo.seleccion === OTRO && (
                 <input
                   type="text"
+                  className={sinTitulo(f) ? "foto-titulo--falta" : ""}
                   placeholder="Escribe el título"
                   value={titulo.libre}
                   onChange={(e) => onTitulo(f.clave, { ...titulo, libre: e.target.value })}
@@ -74,12 +82,20 @@ export default function PasoFotos({ fotosTipo, fotoHoja, titulosFoto, fotos, tit
                   onListo={(blob) => onFoto(f.clave, blob)}
                   inicialListo={Boolean(fotos[f.clave])}
                   notaListo={f.clave === fotoHoja ? "(la del paso 2)" : ""}
+                  falta={!fotos[f.clave]}
                 />
               ))}
             </div>
           </div>
         );
       })}
+
+      {faltantes.length > 0 && (
+        <div className="error aviso-faltantes">
+          {faltantes.length === 1 ? "Falta 1 elemento" : `Faltan ${faltantes.length} elementos`} por completar (marcados
+          en rojo): {faltantes.join(", ")}.
+        </div>
+      )}
 
       <div className="acciones">
         <button type="button" onClick={onVolver}>
