@@ -27,6 +27,17 @@ export async function leerHoja(tipoId, blobFoto) {
   return res.json();
 }
 
+/** Nombre del archivo que se usa si no se escribe uno propio (sin extensión). */
+export async function obtenerNombrePredeterminado(tipoId, datos) {
+  const res = await fetch(`${API_URL}/api/tipos/${tipoId}/nombre-archivo`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  if (!res.ok) throw await leerError(res, "No se pudo obtener el nombre predeterminado.");
+  return (await res.json()).nombre;
+}
+
 /** Devuelve { blob, nombre } del .docx generado. */
 export async function generarInforme(tipoId, { datos, fotos, nombreArchivo, formato }) {
   const formData = new FormData();

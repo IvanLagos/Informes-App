@@ -53,6 +53,13 @@ router.post("/tipos/:tipo/leer-hoja", upload.single("foto"), async (req, res) =>
   }
 });
 
+// Nombre que tendrá el archivo si el técnico no escribe uno (para mostrarlo en el paso 5).
+router.post("/tipos/:tipo/nombre-archivo", express.json({ limit: "1mb" }), (req, res) => {
+  const tipo = tipoDesde(req, res);
+  if (!tipo) return;
+  res.json({ nombre: tipo.nombreArchivo({ ...tipo.valoresPorDefecto(), ...(req.body || {}) }) });
+});
+
 router.post("/tipos/:tipo/generar", upload.any(), async (req, res) => {
   const tipo = tipoDesde(req, res);
   if (!tipo) return;

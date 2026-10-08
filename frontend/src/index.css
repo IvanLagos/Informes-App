@@ -808,6 +808,13 @@ select:focus {
   background: var(--color-error-fondo);
 }
 
+/* Nombre de archivo que se usa si no se escribe uno */
+.nombre-predeterminado {
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+  word-break: break-word;
+}
+
 /* Fotos y títulos pendientes en el paso de fotos */
 .recortar-foto--falta {
   border-color: var(--color-error);

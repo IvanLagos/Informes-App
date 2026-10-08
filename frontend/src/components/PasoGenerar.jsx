@@ -45,6 +45,7 @@ export default function PasoGenerar({
   cargando,
   vistaPrevia,
   nombreArchivo,
+  nombrePredeterminado,
   onCambiarNombre,
   formato,
   onCambiarFormato,
@@ -79,10 +80,16 @@ export default function PasoGenerar({
           <input
             type="text"
             value={nombreArchivo}
-            placeholder="Si lo dejas vacío se usa el nombre de siempre"
+            placeholder={nombrePredeterminado || "Si lo dejas vacío se usa el nombre de siempre"}
             onChange={(e) => onCambiarNombre(e.target.value)}
           />
         </div>
+        {nombrePredeterminado && (
+          <small className="nombre-predeterminado">
+            {nombreArchivo.trim() ? "Nombre predeterminado" : "Si lo dejas vacío se usará"}:{" "}
+            <strong>{nombrePredeterminado}</strong>
+          </small>
+        )}
       </label>
 
       <div className="formatos">

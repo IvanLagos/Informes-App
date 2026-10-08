@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { obtenerClientes, obtenerTipos, leerHoja, generarInforme } from "./api";
+import { obtenerClientes, obtenerTipos, leerHoja, generarInforme, obtenerNombrePredeterminado } from "./api";
 import PasoTipo from "./components/PasoTipo";
 import PasoHoja from "./components/PasoHoja";
 import PasoFormulario from "./components/PasoFormulario";
@@ -22,6 +22,8 @@ export default function App() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [nombreArchivo, setNombreArchivo] = useState("");
+  // Nombre que se usa si no se escribe uno (depende de los datos, ej. el local en Cencosud).
+  const [nombrePredeterminado, setNombrePredeterminado] = useState("");
   const [formatoDescarga, setFormatoDescarga] = useState("docx");
   // { cargando } | { blob, nombre, url } | { error }
   const [vistaPrevia, setVistaPrevia] = useState({});
@@ -152,6 +154,19 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paso, intentoVistaPrevia]);
 
+  useEffect(() => {
+    if (paso !== 5 || !tipo) return;
+    let cancelado = false;
+    setNombrePredeterminado("");
+    obtenerNombrePredeterminado(tipo.id, datos)
+      .then((nombre) => !cancelado && setNombrePredeterminado(nombre))
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paso, tipoId]);
+
   function nombrePdf() {
     const propio = nombreArchivo.trim().replace(/\.docx$|\.pdf$/i, "").replace(/[\\/:*?"<>|]/g, "").trim();
     return propio ? `${propio}.pdf` : vistaPrevia.nombre;
@@ -260,6 +275,7 @@ export default function App() {
         <PasoGenerar
           cargando={cargando}
           nombreArchivo={nombreArchivo}
+          nombrePredeterminado={nombrePredeterminado}
           onCambiarNombre={setNombreArchivo}
           vistaPrevia={vistaPrevia}
           revisado={revisado}
