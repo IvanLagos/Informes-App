@@ -1,3 +1,5 @@
+import Cargando, { ETAPAS_DESCARGA, ETAPAS_VISTA_PREVIA } from "./Cargando";
+
 const FORMATOS = [
   { valor: "docx", etiqueta: "Word (.docx)" },
   { valor: "pdf", etiqueta: "PDF (.pdf)" },
@@ -6,7 +8,11 @@ const FORMATOS = [
 
 function VistaPrevia({ vistaPrevia, onReintentar }) {
   if (vistaPrevia.cargando) {
-    return <div className="vista-previa vista-previa--estado">Generando la vista previa del informe… puede tardar unos segundos.</div>;
+    return (
+      <div className="vista-previa vista-previa--estado">
+        <Cargando titulo="Generando la vista previa del informe" etapas={ETAPAS_VISTA_PREVIA} />
+      </div>
+    );
   }
   if (vistaPrevia.error) {
     return (
@@ -98,6 +104,8 @@ export default function PasoGenerar({
           ))}
         </div>
       </div>
+
+      {cargando && <Cargando titulo="Descargando el informe" etapas={ETAPAS_DESCARGA} />}
 
       <div className="acciones">
         <button type="button" onClick={onVolver} disabled={cargando}>

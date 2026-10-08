@@ -99,7 +99,7 @@ export default function PasoFormulario({ secciones, estadoBaterias, datos, onCam
       ))}
 
       {faltantes.length > 0 && (
-        <div className="error">
+        <div className="error aviso-faltantes">
           {faltantes.length === 1 ? "Falta 1 campo" : `Faltan ${faltantes.length} campos`} por completar (marcados en
           rojo):{" "}
           {faltantes.join(", ")}.

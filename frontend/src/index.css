@@ -807,3 +807,106 @@ select:focus {
   border-color: var(--color-error);
   background: var(--color-error-fondo);
 }
+
+/* Aviso de campos pendientes: separado del último cuadro de texto */
+.aviso-faltantes {
+  margin-top: 28px;
+}
+
+/* ---------- Indicador de carga ---------- */
+.cargando-caja {
+  width: 100%;
+  margin: 20px 0 4px;
+  padding: 16px 18px;
+  border: 1.5px solid #c6dbea;
+  border-radius: 12px;
+  background: #f2f8fc;
+  text-align: left;
+}
+
+.vista-previa--estado .cargando-caja {
+  max-width: 560px;
+  margin: 0;
+}
+
+.cargando-fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cargando-circulo {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #c6dbea;
+  border-top-color: var(--color-acento);
+  animation: cargando-girar 0.9s linear infinite;
+}
+
+.cargando-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cargando-textos strong {
+  color: var(--color-marca);
+}
+
+.cargando-textos span {
+  font-size: 0.88rem;
+  color: var(--color-texto-suave);
+}
+
+.cargando-tiempo {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.cargando-barra {
+  position: relative;
+  height: 6px;
+  margin-top: 14px;
+  border-radius: 3px;
+  background: #dbe8f1;
+  overflow: hidden;
+}
+
+.cargando-barra span {
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--color-acento);
+  animation: cargando-avanzar 1.4s ease-in-out infinite;
+}
+
+@keyframes cargando-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cargando-avanzar {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cargando-circulo,
+  .cargando-barra span {
+    animation-duration: 3s;
+  }
+}

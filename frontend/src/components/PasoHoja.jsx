@@ -1,4 +1,5 @@
 import RecortarFoto from "./RecortarFoto";
+import Cargando, { ETAPAS_LECTURA } from "./Cargando";
 
 export default function PasoHoja({ cargando, foto, onLeer, onVolver }) {
   return (
@@ -9,7 +10,7 @@ export default function PasoHoja({ cargando, foto, onLeer, onVolver }) {
         «{foto.etiqueta}» en el registro fotográfico.
       </p>
       <RecortarFoto label="Hoja de trabajo" aspecto={foto.anchoCm / foto.altoCm} onListo={onLeer} />
-      {cargando && <p className="cargando">Leyendo la hoja de trabajo con IA… puede tomar unos segundos.</p>}
+      {cargando && <Cargando titulo="Leyendo la hoja de trabajo con IA" etapas={ETAPAS_LECTURA} />}
       <div className="acciones">
         <button type="button" onClick={onVolver} disabled={cargando}>
           Volver
