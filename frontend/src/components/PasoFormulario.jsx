@@ -1,4 +1,4 @@
-import TablaBaterias from "./TablaBaterias";
+import TablaBaterias, { faltantesTablaBaterias } from "./TablaBaterias";
 
 /**
  * Fecha mientras se escribe: solo números y las "/" se agregan solas
@@ -31,18 +31,26 @@ function NotaBaterias({ estado, modelo }) {
   );
 }
 
+const vacio = (valor) => !String(valor ?? "").trim();
+
 export default function PasoFormulario({ secciones, estadoBaterias, datos, onCambiar, onSiguiente, onVolver }) {
-  const faltantes = secciones
-    .flatMap((s) => s.campos)
-    .filter((c) => c.obligatorio && !String(datos[c.clave] || "").trim())
-    .map((c) => c.etiqueta);
+  // Todos los campos son obligatorios: lo vacío queda en rojo y no se puede avanzar.
+  const campos = secciones.flatMap((s) => s.campos);
+  const clavesFormulario = new Set(campos.map((c) => c.clave));
+  const faltantes = [
+    ...campos.filter((c) => vacio(datos[c.clave])).map((c) => c.etiqueta),
+    ...(secciones.some((s) => s.componente === "tablaBaterias")
+      ? faltantesTablaBaterias(datos).filter((f) => !clavesFormulario.has(f.clave)).map((f) => f.etiqueta)
+      : []),
+  ];
 
   return (
     <section className="paso">
       <h2>Paso 3: Revisa y corrige los datos</h2>
       <p>
-        Los datos de la hoja fueron leídos con IA y el resto viene con los valores por defecto del informe. Lo que no
-        aparece en la hoja queda en blanco: complétalo o déjalo así.
+        Los datos de la hoja fueron leídos con IA y el resto viene con los valores por defecto del informe.{" "}
+        <strong>Todos los campos son obligatorios:</strong> lo que quede en blanco se marca en rojo y hay que
+        completarlo para seguir.
       </p>
 
       {secciones.map((seccion) => (
@@ -53,14 +61,9 @@ export default function PasoFormulario({ secciones, estadoBaterias, datos, onCam
             {seccion.campos.map((campo) => (
               <label
                 key={campo.clave}
-                className={`campo ${campo.tipo === "largo" ? "ancho" : ""} ${
-                  campo.obligatorio && !String(datos[campo.clave] || "").trim() ? "campo--falta" : ""
-                }`}
+                className={`campo ${campo.tipo === "largo" ? "ancho" : ""} ${vacio(datos[campo.clave]) ? "campo--falta" : ""}`}
               >
-                <span>
-                  {campo.etiqueta}
-                  {campo.obligatorio && " *"}
-                </span>
+                <span>{campo.etiqueta}</span>
                 {campo.tipo === "largo" && (
                   <textarea value={datos[campo.clave] || ""} onChange={(e) => onCambiar(campo.clave, e.target.value)} rows={3} />
                 )}
@@ -96,7 +99,11 @@ export default function PasoFormulario({ secciones, estadoBaterias, datos, onCam
       ))}
 
       {faltantes.length > 0 && (
-        <div className="error">Completa los datos obligatorios (*): {faltantes.join(", ")}.</div>
+        <div className="error">
+          {faltantes.length === 1 ? "Falta 1 campo" : `Faltan ${faltantes.length} campos`} por completar (marcados en
+          rojo):{" "}
+          {faltantes.join(", ")}.
+        </div>
       )}
 
       <div className="acciones">

@@ -19,9 +19,9 @@ const PLANTILLA = path.join(__dirname, "..", "..", "plantillas", "Cencosud_Mante
 const SECCION_CLIENTE = {
   titulo: "Información cliente",
   campos: [
-    { clave: "LOCAL", etiqueta: "Local", obligatorio: true },
-    { clave: "DIRECCION_CLIENTE", etiqueta: "Dirección", obligatorio: true },
-    { clave: "ATENCION_CLIENTE", etiqueta: "Atención (quien firmó en terreno)", obligatorio: true },
+    { clave: "LOCAL", etiqueta: "Local" },
+    { clave: "DIRECCION_CLIENTE", etiqueta: "Dirección" },
+    { clave: "ATENCION_CLIENTE", etiqueta: "Atención (quien firmó en terreno)" },
   ],
 };
 // Va justo después de "Portada y encabezado", como en el informe.

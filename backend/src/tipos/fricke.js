@@ -20,12 +20,12 @@ const SECCIONES = [
     // N° de informe es fijo: 4SAT010). La fecha del informe va en el encabezado.
     titulo: "Portada y encabezado",
     campos: [
-      { clave: "EMPRESA", etiqueta: "Empresa", obligatorio: true },
-      { clave: "ATENCION", etiqueta: "Atención", obligatorio: true },
-      { clave: "ASUNTO", etiqueta: "Asunto", obligatorio: true },
+      { clave: "EMPRESA", etiqueta: "Empresa" },
+      { clave: "ATENCION", etiqueta: "Atención" },
+      { clave: "ASUNTO", etiqueta: "Asunto" },
       // tipo "fecha": el formulario agrega las "/" solo mientras se escriben los números.
-      { clave: "FECHA_ASUNTO", etiqueta: "Fecha del servicio — portada (DD/MM/AAAA)", tipo: "fecha", obligatorio: true },
-      { clave: "FECHA_INFORME", etiqueta: "Fecha del informe — encabezado (DD/MM/AAAA)", tipo: "fecha", obligatorio: true },
+      { clave: "FECHA_ASUNTO", etiqueta: "Fecha del servicio — portada (DD/MM/AAAA)", tipo: "fecha" },
+      { clave: "FECHA_INFORME", etiqueta: "Fecha del informe — encabezado (DD/MM/AAAA)", tipo: "fecha" },
     ],
   },
   {

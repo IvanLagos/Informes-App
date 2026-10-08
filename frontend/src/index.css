@@ -801,3 +801,9 @@ select:focus {
     bottom: 16px;
   }
 }
+
+/* Casilla vacía en la tabla de baterías (todos los campos son obligatorios) */
+.tabla-baterias input.tb-falta {
+  border-color: var(--color-error);
+  background: var(--color-error-fondo);
+}

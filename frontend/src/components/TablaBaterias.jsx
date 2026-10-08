@@ -39,14 +39,38 @@ function passAutomatico(datos) {
   return String(Math.max(total - entero(datos.BAT_TOTAL_WARNING) - entero(datos.BAT_TOTAL_FAIL), 0));
 }
 
+const vacio = (valor) => !String(valor ?? "").trim();
+
+/** Valor que se ve (y va al informe) en el total Pass: el escrito o el automático. */
+function valorPass(datos) {
+  return vacio(datos.BAT_TOTAL_PASS) ? passAutomatico(datos) : datos.BAT_TOTAL_PASS;
+}
+
+/** Casillas de la tabla que están vacías: [{ clave, etiqueta }]. */
+export function faltantesTablaBaterias(datos) {
+  const casillas = [
+    ...PERFIL.map((f) => ({ clave: f.clave, etiqueta: `${f.etiqueta} (tabla de baterías)`, valor: datos[f.clave] })),
+    ...RESULTADOS.flatMap((r) => [
+      { clave: r.resistencia, etiqueta: `Resistencia ${r.juicio.split(" ")[0]}`, valor: datos[r.resistencia] },
+      {
+        clave: r.total,
+        etiqueta: `Total ${r.juicio.split(" ")[0]}`,
+        valor: r.total === "BAT_TOTAL_PASS" ? valorPass(datos) : datos[r.total],
+      },
+    ]),
+  ];
+  return casillas.filter((c) => vacio(c.valor)).map(({ clave, etiqueta }) => ({ clave, etiqueta }));
+}
+
 export default function TablaBaterias({ datos, onCambiar }) {
-  const passEditado = String(datos.BAT_TOTAL_PASS || "").trim() !== "";
+  const passEditado = !vacio(datos.BAT_TOTAL_PASS);
 
   function campo(clave, { numerico = false, placeholder = "" } = {}) {
     return (
       <input
         type="text"
         inputMode={numerico ? "decimal" : "text"}
+        className={vacio(datos[clave]) ? "tb-falta" : ""}
         value={datos[clave] ?? ""}
         placeholder={placeholder}
         onChange={(e) => onCambiar(clave, e.target.value)}
@@ -99,6 +123,7 @@ export default function TablaBaterias({ datos, onCambiar }) {
                   <input
                     type="text"
                     inputMode="numeric"
+                    className={vacio(valorPass(datos)) ? "tb-falta" : ""}
                     value={passEditado ? datos.BAT_TOTAL_PASS : passAutomatico(datos)}
                     title="Se calcula solo (cantidad − Warning − Fail) hasta que lo cambies"
                     onChange={(e) => onCambiar("BAT_TOTAL_PASS", e.target.value)}
