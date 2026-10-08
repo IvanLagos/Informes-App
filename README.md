@@ -75,9 +75,30 @@ LibreOffice, la conversión local usa el Word instalado.
 1. En render.com: **New → Blueprint** y elegir este repositorio.
 2. Completar las variables que pide:
    - `ANTHROPIC_API_KEY`: la clave de la API de Anthropic.
-   - `APP_PASSWORD`: la contraseña para entrar a la página.
-3. Al abrir la dirección que entrega Render, el navegador pide usuario
-   (`ffica`) y contraseña (`APP_PASSWORD`).
+   - `ADMIN_PASSWORD`: la clave inicial del administrador (`ADMIN_EMAIL`).
+3. Al abrir la dirección que entrega Render aparece la pantalla de ingreso.
+
+El servicio usa el plan **Starter** con un **disco permanente** montado en
+`/var/data` (`DATA_DIR`): ahí se guardan las cuentas (`usuarios.json`). En el
+plan gratuito no hay disco y las cuentas se perderían en cada reinicio.
+
+## Cuentas de acceso
+
+Cada técnico entra con su propio correo y clave. Los **administradores**
+ven el botón **Cuentas** arriba a la derecha: crean cuentas (con clave
+inicial generada), asignan una clave nueva, desactivan o eliminan. Siempre
+queda al menos un administrador activo. Cada persona puede cambiar su propia
+clave con **Cambiar mi clave**.
+
+- Las claves se guardan cifradas (bcrypt), nunca en texto plano.
+- La sesión dura 12 horas. Desactivar una cuenta o cambiarle la clave cierra
+  sus sesiones abiertas de inmediato.
+- 8 intentos fallidos de ingreso desde la misma conexión bloquean el ingreso
+  por 15 minutos.
+- La primera cuenta (administrador) se crea al arrancar con `ADMIN_EMAIL` y
+  `ADMIN_PASSWORD`, solo si todavía no existe ninguna. En local esos datos
+  están en `backend/.env` y las cuentas en `backend/datos/` (no se suben a
+  GitHub).
 
 Cada vez que se sube un cambio a `main`, Render vuelve a publicar la app.
 En el plan gratuito el servicio se duerme sin uso y la primera visita

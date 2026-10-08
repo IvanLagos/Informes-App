@@ -1,4 +1,3 @@
-const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 // backend/.env, sin importar desde qué carpeta se arranque (en Render las
@@ -7,8 +6,16 @@ require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const express = require("express");
 const cors = require("cors");
 const informeRoutes = require("./routes/informe");
+const cuentas = require("./routes/cuentas");
+const usuarios = require("./lib/usuarios");
+const { requiereSesion } = require("./lib/sesion");
+
+usuarios.inicializar();
 
 const app = express();
+// Detrás del proxy de Render (y de Cloudflare): confiar en el primer salto
+// para leer bien la IP del visitante (la usa el límite de intentos de ingreso).
+app.set("trust proxy", 1);
 // exposedHeaders: para que el navegador pueda leer el nombre del archivo generado.
 app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
 app.use(express.json());
@@ -16,32 +23,11 @@ app.use(express.json());
 // Libre de contraseña para que Render pueda revisar que el servicio está vivo.
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
-function iguales(a, b) {
-  const ba = Buffer.from(String(a));
-  const bb = Buffer.from(String(b));
-  return ba.length === bb.length && crypto.timingSafeEqual(ba, bb);
-}
-
-// Si APP_PASSWORD está definida (en Render), toda la app pide usuario y
-// contraseña con la ventana de acceso del navegador. En local no se define.
-const APP_PASSWORD = process.env.APP_PASSWORD;
-const APP_USUARIO = process.env.APP_USUARIO || "ffica";
-if (APP_PASSWORD) {
-  app.use((req, res, next) => {
-    const [tipo, credenciales] = (req.headers.authorization || "").split(" ");
-    if (tipo === "Basic" && credenciales) {
-      const texto = Buffer.from(credenciales, "base64").toString();
-      const separador = texto.indexOf(":");
-      const usuario = texto.slice(0, separador);
-      const clave = texto.slice(separador + 1);
-      if (iguales(usuario, APP_USUARIO) && iguales(clave, APP_PASSWORD)) return next();
-    }
-    res.setHeader("WWW-Authenticate", 'Basic realm="Informes App", charset="UTF-8"');
-    res.status(401).send("Acceso restringido.");
-  });
-}
-
-app.use("/api", informeRoutes);
+// Ingreso con cuenta propia de cada técnico. La página se entrega libre (es
+// la pantalla de ingreso); todo lo que genera informes exige sesión.
+app.use("/api/sesion", cuentas.sesion);
+app.use("/api/admin", cuentas.admin);
+app.use("/api", requiereSesion, informeRoutes);
 
 // En producción el backend también entrega la página (frontend ya compilado).
 const DIST = path.join(__dirname, "..", "..", "frontend", "dist");

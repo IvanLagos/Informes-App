@@ -7,10 +7,16 @@ import PasoFotos, { tituloFinal } from "./components/PasoFotos";
 import { estadoBaterias, sincronizarRecomendacion } from "./baterias";
 import PasoGenerar from "./components/PasoGenerar";
 import BotonArriba from "./components/BotonArriba";
+import Cuentas from "./components/Cuentas";
+import CambiarClave from "./components/CambiarClave";
+import { LOGO_URL } from "./components/Ingreso";
 
 const NOMBRES_PASOS = ["Cliente y tipo", "Hoja de trabajo", "Datos", "Fotos", "Generar"];
 
-export default function App() {
+export default function App({ usuario, onActualizarUsuario, onCerrarSesion }) {
+  // "informes" | "cuentas" | "clave". El asistente sigue montado (oculto) para
+  // no perder lo avanzado al ir a cuentas o a cambiar la clave.
+  const [vista, setVista] = useState("informes");
   const [paso, setPaso] = useState(1);
   const [clientes, setClientes] = useState([]);
   const [clienteId, setClienteId] = useState("");
@@ -48,7 +54,12 @@ export default function App() {
   // navegador corta un desplazamiento suave a medio camino.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, [paso]);
+  }, [paso, vista]);
+
+  function cerrarSesion() {
+    if (paso > 1 && !window.confirm("¿Cerrar sesión? Se perderá el informe que estás armando.")) return;
+    onCerrarSesion();
+  }
 
   function elegirCliente(id) {
     setClienteId(id);
@@ -204,7 +215,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <img
-          src="https://fernandezfica.cl/img/LogoFF2.png"
+          src={LOGO_URL}
           alt="Fernández Fica S.A."
           className="app-logo"
           onError={(e) => {
@@ -215,8 +226,28 @@ export default function App() {
           <h1>Generador de Informes</h1>
           <p>{tipo && cliente ? `${cliente.nombre} · ${tipo.nombreCorto || tipo.nombre}` : "Fernández Fica S.A."}</p>
         </div>
+        <div className="barra-usuario">
+          <span className="barra-usuario-nombre">{usuario.nombre}</span>
+          <div className="barra-usuario-botones">
+            {usuario.perfil === "administrador" && (
+              <button type="button" onClick={() => setVista(vista === "cuentas" ? "informes" : "cuentas")}>
+                {vista === "cuentas" ? "Informes" : "Cuentas"}
+              </button>
+            )}
+            <button type="button" onClick={() => setVista(vista === "clave" ? "informes" : "clave")}>
+              {vista === "clave" ? "Informes" : "Cambiar mi clave"}
+            </button>
+            <button type="button" onClick={cerrarSesion}>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
       </header>
 
+      {vista === "cuentas" && <Cuentas usuario={usuario} onVolver={() => setVista("informes")} />}
+      {vista === "clave" && <CambiarClave onListo={onActualizarUsuario} onVolver={() => setVista("informes")} />}
+
+      <div hidden={vista !== "informes"}>
       <ol className="pasos">
         {NOMBRES_PASOS.map((nombre, i) => {
           const n = i + 1;
@@ -294,6 +325,7 @@ export default function App() {
           onVolver={() => setPaso(4)}
         />
       )}
+      </div>
 
       <BotonArriba />
     </div>

@@ -953,3 +953,311 @@ input.foto-titulo--falta {
     animation-duration: 3s;
   }
 }
+
+/* ---------- Ingreso y cuentas ---------- */
+.ingreso {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: linear-gradient(160deg, var(--color-fondo) 0%, #dfe8f3 100%);
+}
+
+.ingreso-tarjeta {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: var(--sombra-card);
+}
+
+.ingreso-logo {
+  height: 64px;
+  width: auto;
+  align-self: center;
+}
+
+.ingreso-tarjeta h1 {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 1.45rem;
+  color: var(--color-marca-oscuro);
+}
+
+.ingreso-subtitulo,
+.ingreso-ayuda {
+  margin: 0;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--color-texto-suave);
+}
+
+.ingreso-tarjeta .error {
+  margin-bottom: 0;
+}
+
+.ingreso-tarjeta button.principal {
+  margin-top: 6px;
+}
+
+.ingreso-cargando {
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.aviso-info,
+.aviso-ok {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  margin-bottom: 18px;
+}
+
+.aviso-info {
+  background: #eef6fb;
+  color: var(--color-acento-oscuro);
+  border: 1px solid #b9d9ea;
+}
+
+.aviso-ok {
+  background: #ecfdf3;
+  color: #05603a;
+  border: 1px solid #abefc6;
+}
+
+.aviso-ok code,
+.aviso-info code {
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1px 6px;
+  border-radius: 4px;
+  user-select: all;
+}
+
+/* Barra con el usuario dentro del encabezado */
+.barra-usuario {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.barra-usuario-nombre {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.barra-usuario-botones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.barra-usuario button {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: white;
+}
+
+.barra-usuario button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.26);
+  border-color: white;
+}
+
+.cuentas-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cuentas-titulo h2 {
+  margin-bottom: 0;
+}
+
+.campo-con-boton {
+  display: flex;
+  gap: 8px;
+}
+
+.campo-con-boton input {
+  flex: 1;
+  min-width: 0;
+}
+
+.acciones--derecha {
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.formulario--angosto {
+  max-width: 640px;
+}
+
+.texto-error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.85rem;
+}
+
+.ancho {
+  grid-column: 1 / -1;
+}
+
+button.boton-chico {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+
+button.boton-peligro {
+  color: var(--color-error);
+  border-color: #fda29b;
+}
+
+button.boton-peligro:hover:not(:disabled) {
+  background: var(--color-error-fondo);
+  border-color: var(--color-error);
+}
+
+button.enlace {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-acento);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+button.enlace:hover:not(:disabled) {
+  background: none;
+}
+
+.tabla-cuentas-contenedor {
+  overflow-x: auto;
+}
+
+.tabla-cuentas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla-cuentas th {
+  text-align: left;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-texto-suave);
+  padding: 8px 10px;
+  border-bottom: 1.5px solid var(--color-borde);
+}
+
+.tabla-cuentas td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--color-borde);
+  vertical-align: top;
+}
+
+.tabla-cuentas select {
+  padding: 6px 8px;
+  font-size: 0.88rem;
+}
+
+.cuenta--inactiva td {
+  color: var(--color-texto-suave);
+  background: #f8f9fb;
+}
+
+.cuenta-correo,
+.cuenta-fecha,
+.cuenta-nota {
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+}
+
+.etiqueta-yo {
+  margin-left: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-acento);
+  background: #eef6fb;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.estado {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.estado--activo {
+  color: #05603a;
+  background: #ecfdf3;
+}
+
+.estado--inactivo {
+  color: var(--color-texto-suave);
+  background: #eef0f3;
+}
+
+.cuenta-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.nueva-clave {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.nueva-clave input {
+  width: 140px;
+  padding: 6px 8px;
+  font-family: inherit;
+  border: 1.5px solid var(--color-borde);
+  border-radius: 8px;
+}
+
+.aviso-clave {
+  margin: 6px 0 0;
+  width: 100%;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    flex-wrap: wrap;
+  }
+
+  .barra-usuario {
+    margin-left: 0;
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .barra-usuario-botones {
+    justify-content: flex-start;
+  }
+}

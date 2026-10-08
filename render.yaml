@@ -4,12 +4,27 @@ services:
     # Docker para poder instalar LibreOffice (conversión a PDF). Ver Dockerfile.
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: free
+    # Starter: el plan gratuito no admite disco permanente, y sin disco las
+    # cuentas de acceso se borrarían en cada reinicio o actualización.
+    plan: starter
     healthCheckPath: /api/health
+    disk:
+      name: datos
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: APP_PASSWORD
+      # Dónde se guardan las cuentas (usuarios.json): el disco permanente.
+      - key: DATA_DIR
+        value: /var/data
+      # Firma de las sesiones: Render la genera sola una vez.
+      - key: JWT_SECRET
+        generateValue: true
+      # Administrador inicial: se crea solo si todavía no hay ninguna cuenta.
+      - key: ADMIN_EMAIL
+        value: ilagos@fernandezfica.cl
+      - key: ADMIN_NOMBRE
+        value: Iván Lagos
+      - key: ADMIN_PASSWORD
         sync: false
-      - key: APP_USUARIO
-        value: ffica
