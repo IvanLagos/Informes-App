@@ -75,7 +75,7 @@ export default function PasoGenerar({
       </label>
 
       <label className="campo ancho nombre-archivo">
-        <span>Nombre del archivo (opcional)</span>
+        <span>Nombre del archivo (puedes editarlo)</span>
         <div className="nombre-archivo-campo">
           <input
             type="text"
@@ -84,10 +84,13 @@ export default function PasoGenerar({
             onChange={(e) => onCambiarNombre(e.target.value)}
           />
         </div>
-        {nombrePredeterminado && (
+        {/* Solo si se cambió el nombre: recordar el original y permitir volver a él. */}
+        {nombrePredeterminado && nombreArchivo !== nombrePredeterminado && (
           <small className="nombre-predeterminado">
-            {nombreArchivo.trim() ? "Nombre predeterminado" : "Si lo dejas vacío se usará"}:{" "}
-            <strong>{nombrePredeterminado}</strong>
+            Nombre predeterminado: <strong>{nombrePredeterminado}</strong>{" "}
+            <button type="button" className="enlace" onClick={() => onCambiarNombre(nombrePredeterminado)}>
+              Restaurar
+            </button>
           </small>
         )}
       </label>

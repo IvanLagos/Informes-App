@@ -67,6 +67,7 @@ export default function App() {
       )
     );
     setNombreArchivo("");
+    setNombrePredeterminado("");
     setPaso(2);
   }
 
@@ -157,9 +158,15 @@ export default function App() {
   useEffect(() => {
     if (paso !== 5 || !tipo) return;
     let cancelado = false;
-    setNombrePredeterminado("");
     obtenerNombrePredeterminado(tipo.id, datos)
-      .then((nombre) => !cancelado && setNombrePredeterminado(nombre))
+      .then((nombre) => {
+        if (cancelado) return;
+        // El campo parte escrito con el nombre predeterminado para editar solo
+        // los detalles. Si los datos cambiaron (ej. el local), se actualiza,
+        // salvo que el técnico haya escrito un nombre propio.
+        setNombreArchivo((actual) => (!actual.trim() || actual === nombrePredeterminado ? nombre : actual));
+        setNombrePredeterminado(nombre);
+      })
       .catch(() => {});
     return () => {
       cancelado = true;
