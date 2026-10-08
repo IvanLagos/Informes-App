@@ -73,9 +73,8 @@ para tener LibreOffice, que convierte el informe a PDF. En Windows sin
 LibreOffice, la conversión local usa el Word instalado.
 
 1. En render.com: **New → Blueprint** y elegir este repositorio.
-2. Completar las variables que pide:
+2. Completar la variable que pide:
    - `ANTHROPIC_API_KEY`: la clave de la API de Anthropic.
-   - `ADMIN_PASSWORD`: la clave inicial del administrador (`ADMIN_EMAIL`).
 3. Al abrir la dirección que entrega Render aparece la pantalla de ingreso.
 
 El servicio usa el plan **Starter** con un **disco permanente** montado en
