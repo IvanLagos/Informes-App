@@ -235,10 +235,18 @@ export default function App({ usuario, onActualizarUsuario, onCerrarSesion }) {
               </button>
             )}
             <button type="button" onClick={() => setVista(vista === "clave" ? "informes" : "clave")}>
-              {vista === "clave" ? "Informes" : "Cambiar mi clave"}
+              {vista === "clave" ? (
+                "Informes"
+              ) : (
+                <>
+                  <span className="solo-escritorio">Cambiar mi clave</span>
+                  <span className="solo-movil">Mi clave</span>
+                </>
+              )}
             </button>
             <button type="button" onClick={cerrarSesion}>
-              Cerrar sesión
+              <span className="solo-escritorio">Cerrar sesión</span>
+              <span className="solo-movil">Salir</span>
             </button>
           </div>
         </div>

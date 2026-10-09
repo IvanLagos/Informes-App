@@ -797,8 +797,8 @@ select:focus {
 
 @media (max-width: 600px) {
   .boton-arriba {
-    right: 16px;
-    bottom: 16px;
+    right: 14px;
+    bottom: 14px;
   }
 }
 
@@ -1246,6 +1246,50 @@ button.enlace:hover:not(:disabled) {
   font-size: 0.82rem;
 }
 
+/* ---------- Vista previa (se abre en otra pestaña) ---------- */
+.vista-previa--lista {
+  flex-direction: column;
+  gap: 12px;
+  background: #f2f8fc;
+  border-color: #c6dbea;
+}
+
+.vista-previa-titulo {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-ok);
+}
+
+.vista-previa--lista .vista-previa-ayuda {
+  margin: 0;
+}
+
+/* Enlace con aspecto de botón principal */
+a.boton-enlace {
+  display: inline-block;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.boton-enlace.principal {
+  background: var(--color-marca);
+  color: white;
+  box-shadow: 0 4px 12px rgba(20, 80, 146, 0.25);
+}
+
+a.boton-enlace.principal:hover {
+  background: var(--color-marca-oscuro);
+}
+
+/* Textos alternativos según el ancho de pantalla */
+.solo-movil {
+  display: none;
+}
+
+/* ---------- Tablet ---------- */
 @media (max-width: 720px) {
   .app-header {
     flex-wrap: wrap;
@@ -1259,5 +1303,263 @@ button.enlace:hover:not(:disabled) {
 
   .barra-usuario-botones {
     justify-content: flex-start;
+  }
+
+  .formulario {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 600px) {
+  html {
+    font-size: 16px;
+  }
+
+  .solo-movil {
+    display: inline;
+  }
+
+  .solo-escritorio {
+    display: none;
+  }
+
+  .app {
+    padding: 12px 12px 84px;
+  }
+
+  /* Encabezado compacto: logo y título en una fila, usuario y botones abajo */
+  .app-header {
+    gap: 10px 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .app-logo {
+    height: 36px;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+
+  .app-header-texto {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .app-header-texto h1 {
+    font-size: 1.15rem;
+  }
+
+  .app-header-texto p {
+    font-size: 0.8rem;
+  }
+
+  .barra-usuario {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  .barra-usuario-nombre {
+    font-size: 0.85rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .barra-usuario-botones {
+    flex-wrap: nowrap;
+  }
+
+  .barra-usuario button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* Barra de pasos: círculos más chicos y solo el nombre del paso actual */
+  .pasos {
+    margin-bottom: 16px;
+  }
+
+  .paso-circulo {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .pasos li:not(:first-child)::before {
+    top: 15px;
+  }
+
+  .pasos li .paso-nombre {
+    display: none;
+  }
+
+  .pasos li.activo .paso-nombre {
+    display: block;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* Tarjetas con menos margen interior */
+  .paso {
+    padding: 18px 14px;
+    border-radius: 12px;
+  }
+
+  .paso h2 {
+    font-size: 1.15rem;
+  }
+
+  .paso h3 {
+    margin: 22px 0 12px;
+    padding-top: 14px;
+  }
+
+  /* Botones de avance: grandes y fáciles de tocar */
+  .acciones {
+    gap: 10px;
+  }
+
+  .acciones button {
+    flex: 1;
+    padding: 14px 12px;
+  }
+
+  .acciones--derecha button {
+    flex: 0 1 auto;
+  }
+
+  /* Evita que el celular haga zoom al escribir (necesita letra de 16 px o más) */
+  .campo input,
+  .campo textarea,
+  select,
+  .tabla-baterias input,
+  .nombre-archivo-campo input,
+  .nueva-clave input {
+    font-size: 16px;
+  }
+
+  .tipo-opcion {
+    padding: 14px;
+  }
+
+  .formatos-opciones {
+    grid-template-columns: 1fr;
+  }
+
+  .foto-trabajo,
+  .recortar-foto {
+    padding: 12px;
+  }
+
+  .rotar-botones button {
+    flex: 1 1 auto;
+  }
+
+  .revisado {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .revisado input {
+    flex: none;
+    margin-top: 2px;
+  }
+
+  .revisado-ayuda {
+    text-align: left;
+  }
+
+  a.boton-enlace {
+    width: 100%;
+    text-align: center;
+    padding: 14px 12px;
+  }
+
+  .cargando-caja {
+    padding: 14px;
+  }
+
+  .vista-previa--estado {
+    padding: 14px;
+  }
+
+  /* Tabla de baterías: en resultados se ocultan las columnas fijas
+     ("Measurement" siempre es Resistance; "Battery status" lo dice el color)
+     para que lo editable quepa sin desplazarse de lado. */
+  .tabla-baterias {
+    border-left-width: 6px;
+  }
+
+  .tabla-baterias th,
+  .tabla-baterias td {
+    padding: 4px 6px;
+  }
+
+  .tb-perfil .tb-etiqueta {
+    white-space: normal;
+    width: 38%;
+  }
+
+  .tb-resultados th:nth-child(2),
+  .tb-resultados td:nth-child(2),
+  .tb-resultados th:nth-child(5),
+  .tb-resultados td:nth-child(5) {
+    display: none;
+  }
+
+  .tb-resultados .tb-juicio {
+    width: 40%;
+  }
+
+  .tb-medida input,
+  .tb-resultados td:nth-child(4) input {
+    max-width: 64px;
+  }
+
+  /* Cuentas: cada cuenta como una tarjeta en vez de una fila de tabla */
+  .tabla-cuentas thead {
+    display: none;
+  }
+
+  .tabla-cuentas,
+  .tabla-cuentas tbody,
+  .tabla-cuentas tr,
+  .tabla-cuentas td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabla-cuentas tr {
+    border: 1px solid var(--color-borde);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .tabla-cuentas td {
+    border-bottom: none;
+    padding: 8px 12px;
+  }
+
+  .tabla-cuentas td:first-child {
+    padding-top: 12px;
+  }
+
+  .cuenta-acciones {
+    min-width: 0;
+    padding-bottom: 12px !important;
+  }
+
+  .boton-arriba {
+    width: 44px;
+    height: 44px;
   }
 }

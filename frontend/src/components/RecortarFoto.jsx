@@ -157,7 +157,16 @@ export default function RecortarFoto({ label, aspecto, onListo, inicialListo = f
 
       {etapa === ETAPAS.RECORTAR && (
         <div className="recorte-editor">
-          <div className="recorte-area" style={{ width: Math.round(ALTO_AREA_RECORTE * aspecto), height: ALTO_AREA_RECORTE }}>
+          {/* Mantiene la forma de la foto y se achica para caber en pantallas
+              angostas (celular): nunca más ancha que la tarjeta ni más alta
+              que el 65 % de la pantalla. */}
+          <div
+            className="recorte-area"
+            style={{
+              width: `min(100%, ${Math.round(ALTO_AREA_RECORTE * aspecto)}px, ${Math.round(65 * aspecto)}vh)`,
+              aspectRatio: aspecto,
+            }}
+          >
             <Cropper
               image={urlParaRecortar}
               crop={crop}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Cargando, { ETAPAS_DESCARGA, ETAPAS_VISTA_PREVIA } from "./Cargando";
 
 const FORMATOS = [
@@ -6,7 +7,10 @@ const FORMATOS = [
   { valor: "ambos", etiqueta: "Ambos (Word y PDF)" },
 ];
 
-function VistaPrevia({ vistaPrevia, onReintentar }) {
+// La vista previa se abre en otra pestaña (no incrustada): así funciona igual
+// en computador y en celular, donde los navegadores no muestran un PDF dentro
+// de la página. Abrirla al menos una vez habilita la casilla de revisión.
+function VistaPrevia({ vistaPrevia, abierta, onAbrir, onReintentar }) {
   if (vistaPrevia.cargando) {
     return (
       <div className="vista-previa vista-previa--estado">
@@ -27,17 +31,17 @@ function VistaPrevia({ vistaPrevia, onReintentar }) {
   }
   if (!vistaPrevia.url) return null;
   return (
-    <>
-      {/* #view=FitH: ajusta la página al ancho; navpanes=0: sin panel de miniaturas. */}
-      <iframe className="vista-previa" src={`${vistaPrevia.url}#view=FitH&navpanes=0`} title="Vista previa del informe" />
+    <div className="vista-previa vista-previa--estado vista-previa--lista">
+      <p className="vista-previa-titulo">✓ La vista previa del informe está lista</p>
+      <a className="boton-enlace principal" href={vistaPrevia.url} target="_blank" rel="noreferrer" onClick={onAbrir}>
+        Abrir vista previa (PDF)
+      </a>
       <p className="vista-previa-ayuda">
-        ¿No se ve bien?{" "}
-        <a href={vistaPrevia.url} target="_blank" rel="noreferrer">
-          Abrir la vista previa en otra pestaña
-        </a>
-        . Si algo está mal, usa «Volver» para corregirlo.
+        {abierta
+          ? "Ya la abriste. Si algo está mal, usa «Volver» para corregirlo."
+          : "Se abre en otra pestaña. Revísala página por página antes de descargar."}
       </p>
-    </>
+    </div>
   );
 }
 
@@ -55,13 +59,22 @@ export default function PasoGenerar({
   onGenerar,
   onVolver,
 }) {
-  const vistaLista = Boolean(vistaPrevia.url);
+  const [abierta, setAbierta] = useState(false);
+  // Cada vista previa nueva (al volver y corregir) hay que abrirla de nuevo.
+  useEffect(() => setAbierta(false), [vistaPrevia.url]);
+
+  const vistaLista = Boolean(vistaPrevia.url) && abierta;
   const puedeDescargar = vistaLista && revisado && !cargando;
 
   return (
     <section className="paso">
       <h2>Paso 5: Revisa y descarga el informe</h2>
-      <VistaPrevia vistaPrevia={vistaPrevia} onReintentar={onReintentarVistaPrevia} />
+      <VistaPrevia
+        vistaPrevia={vistaPrevia}
+        abierta={abierta}
+        onAbrir={() => setAbierta(true)}
+        onReintentar={onReintentarVistaPrevia}
+      />
 
       {/* La descarga exige haber visto la vista previa y confirmarlo. */}
       <label className={`revisado${vistaLista ? "" : " revisado--bloqueado"}`}>
@@ -129,7 +142,7 @@ export default function PasoGenerar({
         <p className="vista-previa-ayuda revisado-ayuda">
           {vistaLista
             ? "Marca la casilla de revisión para habilitar la descarga."
-            : "La descarga se habilita cuando la vista previa esté lista y la hayas revisado."}
+            : "La descarga se habilita después de abrir la vista previa y marcar la casilla de revisión."}
         </p>
       )}
     </section>
