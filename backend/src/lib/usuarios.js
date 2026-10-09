@@ -20,6 +20,10 @@ const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : path.join(__dirname, "..", "..", "datos");
 const ARCHIVO = path.join(DATA_DIR, "usuarios.json");
+// Con disco permanente (Render), DATA_DIR ya existe al arrancar porque es el
+// punto de montaje. Si no existe, las cuentas se guardan en el disco temporal
+// del servidor y se pierden en cada reinicio o actualización.
+const DISCO_PERMANENTE = Boolean(process.env.DATA_DIR) && fs.existsSync(DATA_DIR);
 
 const PERFILES = [
   { id: "tecnico", etiqueta: "Técnico" },
@@ -73,6 +77,11 @@ function validarPerfil(perfil) {
 }
 
 function inicializar() {
+  if (process.env.NODE_ENV === "production" && !DISCO_PERMANENTE) {
+    console.warn(
+      `ATENCIÓN: ${DATA_DIR} no es un disco permanente. Las cuentas y las claves se perderán en cada reinicio.`
+    );
+  }
   const usuarios = leer();
   if (usuarios.length > 0) return;
   const correo = normalizarCorreo(process.env.ADMIN_EMAIL || CORREO_ADMIN_INICIAL);
@@ -181,6 +190,7 @@ function cambiarClavePropia(id, claveActual, claveNueva) {
 }
 
 module.exports = {
+  DISCO_PERMANENTE,
   PERFILES,
   LARGO_MINIMO_CLAVE,
   inicializar,

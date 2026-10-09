@@ -21,7 +21,8 @@ app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
 app.use(express.json());
 
 // Libre de contraseña para que Render pueda revisar que el servicio está vivo.
-app.get("/api/health", (req, res) => res.json({ ok: true }));
+// cuentasPersistentes: si las cuentas sobreviven a un reinicio (disco permanente).
+app.get("/api/health", (req, res) => res.json({ ok: true, cuentasPersistentes: usuarios.DISCO_PERMANENTE }));
 
 // Ingreso con cuenta propia de cada técnico. La página se entrega libre (es
 // la pantalla de ingreso); todo lo que genera informes exige sesión.
